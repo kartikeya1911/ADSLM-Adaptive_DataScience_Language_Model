@@ -1,0 +1,47 @@
+======================================================================
+  ADSLM — ADAPTIVE DATA SCIENCE LANGUAGE MODEL
+  ABB Innovation Evaluation Report
+  Generated: 2026-08-14 12:11:45
+======================================================================
+
+── PIPELINE OVERVIEW ─────────────────────────────────────────────
+  Task Type    : Clustering
+  Target Column: None
+  Best Model   : KMeans
+  Best Score   : 0.0067
+
+── DATASET INSIGHT ───────────────────────────────────────────────
+  The dataset contains 5,000 records across 12 features (2 numerical, 9 categorical). The dataset is complete — no missing values detected.
+
+── TASK DETECTION ────────────────────────────────────────────────
+  No target column was specified. The system applies Unsupervised Learning — discovering natural groupings in the data without predefined labels. Useful for operational mode detection and anomaly profiling.
+
+── PREPROCESSING SUMMARY ─────────────────────────────────────────
+  Numerical missing values filled using median imputation. Categorical gaps filled using most-frequent (mode) strategy. Categorical columns ['Transaction_ID', 'Customer_ID', 'Date', 'Time', 'Transaction_Type', 'Merchant', 'City', 'Payment_Method', 'Status', 'Fraud_Flag'] were one-hot encoded. All features standardised to zero mean and unit variance (StandardScaler). Final feature matrix contains 7794 columns after encoding.
+
+── MODEL RECOMMENDATIONS ─────────────────────────────────────────
+  [1] KMeans
+      → Fast, scalable centroid-based clustering. Ideal for partitioning machine operational modes (e.g., normal, degraded, critical) from unlabeled sensor telemetry.
+  [2] DBSCAN
+      → Density-based algorithm that discovers clusters of arbitrary shape and automatically flags outliers as noise. Perfect for anomaly detection in manufacturing process data where defects are rare but critical.
+
+── PERFORMANCE METRICS ───────────────────────────────────────────
+  Silhouette Score         : 0.0067
+  N Clusters               : 3
+  N Noise Points           : 0
+
+── AI MODEL INSIGHT ──────────────────────────────────────────────
+  After training and comparing all recommended models, KMeans achieved the best performance. It formed 3 coherent clusters with a Silhouette Score of 0.0067 (scores near +1 indicate well-separated, compact clusters).
+
+── FEATURE INSIGHT ───────────────────────────────────────────────
+  Feature importance scores are not directly extractable for this model type. Consider using SHAP for model-agnostic explanations.
+
+── ACTIONABLE RECOMMENDATIONS ────────────────────────────────────
+  1. Experiment with different K values using the Elbow Method to find the optimal cluster count.
+  2. Visualise clusters using PCA or t-SNE for interpretability.
+  3. Deploy the saved model via the FastAPI /predict endpoint for real-time inference.
+  4. Schedule periodic retraining as new data arrives to prevent model drift.
+
+======================================================================
+  End of ADSLM Report | ABB Evaluation Submission
+======================================================================
