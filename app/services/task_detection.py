@@ -85,12 +85,13 @@ class TaskDetector:
             return "Classification"
 
         # Rule 4: Numerical target → Regression by default
-        #   Smart override: if only 2 unique values (0/1, True/False) treat as Classification
+        #   Smart override: if 2 or fewer unique values (e.g. 0/1 binary target), treat as Classification
         if self.target in numerical:
             summary = self.analysis.get("summary_statistics", {}).get("numerical", {})
-            unique_count = summary.get(self.target, {}).get("count", 999)
-            # Use max to infer unique val check — look at describe data
-            # A cleaner check would need the raw data, so we rely on column type here
+            unique_count = summary.get(self.target, {}).get("nunique", 999)
+            if unique_count <= 2:
+                logger.info(f"Target '{self.target}' is numerical with {unique_count} unique values → override to Classification")
+                return "Classification"
             return "Regression"
 
         return "Unknown"

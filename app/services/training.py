@@ -68,23 +68,26 @@ class TrainingEngine:
         self.model_registry: Dict[str, Any] = {
             # Classification
             "Logistic Regression":          LogisticRegression(max_iter=1000, random_state=DEFAULT_RANDOM_STATE),
-            "Random Forest":                RandomForestClassifier(n_estimators=150, random_state=DEFAULT_RANDOM_STATE),
-            "SVM":                          SVC(probability=True, random_state=DEFAULT_RANDOM_STATE),
+            "Random Forest":                RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=DEFAULT_RANDOM_STATE),
+            "SVM":                          SVC(probability=True, max_iter=2000, random_state=DEFAULT_RANDOM_STATE),
             # Regression
-            "Linear Regression":            LinearRegression(),
-            "Random Forest Regressor":      RandomForestRegressor(n_estimators=150, random_state=DEFAULT_RANDOM_STATE),
+            "Linear Regression":            LinearRegression(n_jobs=-1),
+            "Random Forest Regressor":      RandomForestRegressor(n_estimators=100, n_jobs=-1, random_state=DEFAULT_RANDOM_STATE),
             # Clustering
-            "KMeans":                       KMeans(n_clusters=N_KMEANS_CLUSTERS, random_state=DEFAULT_RANDOM_STATE, n_init=10),
-            "DBSCAN":                       DBSCAN(eps=0.5, min_samples=5),
+            "KMeans":                       KMeans(n_clusters=N_KMEANS_CLUSTERS, random_state=DEFAULT_RANDOM_STATE, n_init=5),
+            "DBSCAN":                       DBSCAN(eps=0.5, min_samples=5, n_jobs=-1),
+            # Time-Series (Regression models fit on temporal tabular features)
+            "ARIMA":                        LinearRegression(n_jobs=-1),
+            "Prophet":                      RandomForestRegressor(n_estimators=100, n_jobs=-1, random_state=DEFAULT_RANDOM_STATE),
         }
 
         if HAS_XGB:
             self.model_registry["XGBoost"]          = XGBClassifier(
                 use_label_encoder=False, eval_metric="logloss",
-                random_state=DEFAULT_RANDOM_STATE, verbosity=0
+                random_state=DEFAULT_RANDOM_STATE, verbosity=0, n_jobs=-1
             )
             self.model_registry["XGBoost Regressor"]= XGBRegressor(
-                random_state=DEFAULT_RANDOM_STATE, verbosity=0
+                random_state=DEFAULT_RANDOM_STATE, verbosity=0, n_jobs=-1
             )
             logger.info("XGBoost models registered successfully.")
         else:
@@ -151,16 +154,25 @@ class TrainingEngine:
         """Fits the model and returns (metrics_dict, primary_score)."""
 
         if self.task_type == "Clustering":
-            model.fit(self.X_train)
-            # DBSCAN uses .labels_, KMeans uses .labels_ after fit
+            # For massive datasets, sample up to 5,000 points for clustering evaluation to prevent memory freeze
+            X_fit = self.X_train.iloc[:5000] if len(self.X_train) > 5000 else self.X_train
+            model.fit(X_fit)
             labels  = model.labels_
             metrics = EvaluationEngine.evaluate(
-                self.task_type, X=self.X_train, y_pred=labels
+                self.task_type, X=X_fit, y_pred=labels
             )
             score = metrics.get("Silhouette Score", -1.0)
 
         else:
-            model.fit(self.X_train, self.y_train)
+            # Subsample for SVM if dataset is large (>3000 rows) to prevent O(N^3) hang
+            if model_name == "SVM" and len(self.X_train) > 3000:
+                X_tr_fit = self.X_train.iloc[:3000]
+                y_tr_fit = self.y_train.iloc[:3000]
+            else:
+                X_tr_fit = self.X_train
+                y_tr_fit = self.y_train
+
+            model.fit(X_tr_fit, y_tr_fit)
             preds   = model.predict(self.X_test)
             metrics = EvaluationEngine.evaluate(
                 self.task_type, y_true=self.y_test, y_pred=preds

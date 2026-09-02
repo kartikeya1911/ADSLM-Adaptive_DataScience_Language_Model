@@ -132,6 +132,8 @@ class DatasetAnalyzer:
         numerical_cols = self.data.select_dtypes(include=[np.number]).columns
         if len(numerical_cols) > 0:
             num_stats = self.data[numerical_cols].describe().round(4).to_dict()
+            for col in numerical_cols:
+                num_stats[col]["nunique"] = int(self.data[col].nunique())
 
         cat_cols = self.data.select_dtypes(include=["object", "category"]).columns
         if len(cat_cols) > 0:

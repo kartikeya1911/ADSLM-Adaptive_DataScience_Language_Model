@@ -111,6 +111,9 @@ class InsightGenerator:
     @staticmethod
     def generate_model_insight(best_model: str, task_type: str, metrics: Dict[str, Any]) -> str:
         """Explains why the winning model was selected and its key performance metric."""
+        if not best_model or str(best_model).lower() in ("none", "n/a"):
+            return "Model training was completed, but no single winning model could be selected."
+
         parts = [f"After training and comparing all recommended models, {best_model} achieved the best performance."]
 
         if task_type == "Classification":

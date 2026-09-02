@@ -8,6 +8,7 @@ Run: streamlit run frontend/app.py
 import io
 import sys
 import os
+os.environ["LOKY_MAX_CPU_COUNT"] = str(os.cpu_count() or 4)
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import pandas as pd
@@ -272,11 +273,21 @@ elif run_btn:
         try:
             res = requests.post(f"{BACKEND_URL}/orchestrate", files=files, data=data, timeout=300)
         except requests.exceptions.ConnectionError:
-            st.error("❌ Cannot connect to the FastAPI backend. Run: `uvicorn main:app --reload`")
+            st.error("❌ Cannot connect to FastAPI backend. Ensure backend is running (`uvicorn main:app`).")
+            st.stop()
+        except requests.exceptions.Timeout:
+            st.error("⏰ Pipeline execution timed out (300s). The dataset may be too large to process in a single request.")
+            st.stop()
+        except Exception as e:
+            st.error(f"❌ Network or pipeline request failed: {e}")
             st.stop()
 
     if res.status_code != 200:
-        st.error(f"Pipeline failed (HTTP {res.status_code}): {res.json().get('detail','Unknown error')}")
+        try:
+            err_msg = res.json().get('detail', 'Unknown error')
+        except Exception:
+            err_msg = res.text or 'Unknown error'
+        st.error(f"Pipeline failed (HTTP {res.status_code}): {err_msg}")
         st.stop()
 
     R = res.json()
@@ -378,7 +389,8 @@ elif run_btn:
                     score = mmetrics.get(score_key, 0)
                     comp_data.append({"Model": mname, "Score": score, "Metric": score_key})
             if comp_data:
-                df_comp = pd.DataFrame(comp_data).sort_values("Score", ascending=(task!="Classification"))
+                is_ascending = (task in ("Regression", "Time-Series"))
+                df_comp = pd.DataFrame(comp_data).sort_values("Score", ascending=is_ascending)
                 fig_bar = go.Figure(go.Bar(
                     x=df_comp["Score"], y=df_comp["Model"],
                     orientation="h",

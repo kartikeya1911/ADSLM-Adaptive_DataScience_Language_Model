@@ -16,6 +16,7 @@ import os
 # Silence joblib/loky CPU count detection warning on Windows
 os.environ["LOKY_MAX_CPU_COUNT"] = str(os.cpu_count() or 4)
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -25,6 +26,20 @@ from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
+
+# ── Lifespan Context ──────────────────────────────────────────────────────────
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("=" * 60)
+    logger.info(" ADSLM API starting up …")
+    logger.info(f" Version : {API_VERSION}")
+    logger.info(" Docs    : http://localhost:8000/docs")
+    logger.info("=" * 60)
+    yield
+    logger.info("ADSLM API shutting down.")
+
+
 # ── Application Factory ───────────────────────────────────────────────────────
 
 app = FastAPI(
@@ -33,6 +48,7 @@ app = FastAPI(
     description = API_DESCRIPTION,
     docs_url    = "/docs",
     redoc_url   = "/redoc",
+    lifespan    = lifespan,
 )
 
 # ── CORS Middleware ───────────────────────────────────────────────────────────
@@ -68,19 +84,3 @@ def root():
             "health":      "/health",
         },
     }
-
-
-# ── Startup / Shutdown Events ─────────────────────────────────────────────────
-
-@app.on_event("startup")
-async def startup_event():
-    logger.info("=" * 60)
-    logger.info(" ADSLM API starting up …")
-    logger.info(f" Version : {API_VERSION}")
-    logger.info(" Docs    : http://localhost:8000/docs")
-    logger.info("=" * 60)
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    logger.info("ADSLM API shutting down.")

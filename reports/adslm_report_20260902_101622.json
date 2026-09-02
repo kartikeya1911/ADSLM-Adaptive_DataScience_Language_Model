@@ -1,0 +1,383 @@
+{
+  "metadata": {
+    "task_type": "Clustering",
+    "target_column": null,
+    "best_model": "KMeans",
+    "best_score": 0.9742,
+    "expertise_level": "intermediate"
+  },
+  "analysis": {
+    "basic_info": {
+      "row_count": 595552,
+      "column_count": 15,
+      "columns": [
+        "author",
+        "n_models",
+        "total_downloads_30d",
+        "total_downloads_all_time",
+        "total_likes",
+        "max_downloads_30d",
+        "total_trending_score",
+        "first_model_created",
+        "latest_model_created",
+        "top_model",
+        "pct_gguf",
+        "pct_safetensors",
+        "pct_gated",
+        "pct_derivative",
+        "median_downloads_30d"
+      ],
+      "dtypes": {
+        "author": "object",
+        "n_models": "int64",
+        "total_downloads_30d": "int64",
+        "total_downloads_all_time": "int64",
+        "total_likes": "int64",
+        "max_downloads_30d": "int64",
+        "total_trending_score": "float64",
+        "first_model_created": "object",
+        "latest_model_created": "object",
+        "top_model": "object",
+        "pct_gguf": "float64",
+        "pct_safetensors": "float64",
+        "pct_gated": "float64",
+        "pct_derivative": "float64",
+        "median_downloads_30d": "float64"
+      },
+      "duplicate_rows": 0,
+      "memory_mb": 232.363
+    },
+    "missing_values": {
+      "_summary": {
+        "total_missing_cells": 0,
+        "overall_missing_pct": 0.0
+      }
+    },
+    "column_types": {
+      "numerical": [
+        "n_models",
+        "total_downloads_30d",
+        "total_downloads_all_time",
+        "total_likes",
+        "max_downloads_30d",
+        "total_trending_score",
+        "pct_gguf",
+        "pct_safetensors",
+        "pct_gated",
+        "pct_derivative",
+        "median_downloads_30d"
+      ],
+      "categorical": [
+        "author",
+        "top_model"
+      ],
+      "datetime": [
+        "first_model_created",
+        "latest_model_created"
+      ]
+    },
+    "summary_statistics": {
+      "numerical": {
+        "n_models": {
+          "count": 595552.0,
+          "mean": 5.0237,
+          "std": 108.8376,
+          "min": 1.0,
+          "25%": 1.0,
+          "50%": 1.0,
+          "75%": 2.0,
+          "max": 68089.0,
+          "nunique": 850
+        },
+        "total_downloads_30d": {
+          "count": 595552.0,
+          "mean": 5163.9916,
+          "std": 800976.4822,
+          "min": 0.0,
+          "25%": 0.0,
+          "50%": 0.0,
+          "75%": 8.0,
+          "max": 371390658.0,
+          "nunique": 6553
+        },
+        "total_downloads_all_time": {
+          "count": 595552.0,
+          "mean": 117834.1684,
+          "std": 15297930.8635,
+          "min": 0.0,
+          "25%": 0.0,
+          "50%": 0.0,
+          "75%": 69.0,
+          "max": 6731679108.0,
+          "nunique": 19254
+        },
+        "total_likes": {
+          "count": 595552.0,
+          "mean": 4.5901,
+          "std": 310.2468,
+          "min": 0.0,
+          "25%": 0.0,
+          "50%": 0.0,
+          "75%": 0.0,
+          "max": 113597.0,
+          "nunique": 986
+        },
+        "max_downloads_30d": {
+          "count": 595552.0,
+          "mean": 2407.1056,
+          "std": 415102.0211,
+          "min": 0.0,
+          "25%": 0.0,
+          "50%": 0.0,
+          "75%": 6.0,
+          "max": 254892100.0,
+          "nunique": 5385
+        },
+        "total_trending_score": {
+          "count": 595552.0,
+          "mean": 0.0639,
+          "std": 13.1683,
+          "min": 0.0,
+          "25%": 0.0,
+          "50%": 0.0,
+          "75%": 0.0,
+          "max": 9419.0,
+          "nunique": 139
+        },
+        "pct_gguf": {
+          "count": 595552.0,
+          "mean": 3.4465,
+          "std": 16.703,
+          "min": 0.0,
+          "25%": 0.0,
+          "50%": 0.0,
+          "75%": 0.0,
+          "max": 100.0,
+          "nunique": 629
+        },
+        "pct_safetensors": {
+          "count": 595552.0,
+          "mean": 34.9464,
+          "std": 44.6481,
+          "min": 0.0,
+          "25%": 0.0,
+          "50%": 0.0,
+          "75%": 100.0,
+          "max": 100.0,
+          "nunique": 920
+        },
+        "pct_gated": {
+          "count": 595552.0,
+          "mean": 1.7901,
+          "std": 12.2158,
+          "min": 0.0,
+          "25%": 0.0,
+          "50%": 0.0,
+          "75%": 0.0,
+          "max": 100.0,
+          "nunique": 412
+        },
+        "pct_derivative": {
+          "count": 595552.0,
+          "mean": 17.9738,
+          "std": 35.3453,
+          "min": 0.0,
+          "25%": 0.0,
+          "50%": 0.0,
+          "75%": 0.0,
+          "max": 100.0,
+          "nunique": 940
+        },
+        "median_downloads_30d": {
+          "count": 595552.0,
+          "mean": 217.6672,
+          "std": 19984.111,
+          "min": 0.0,
+          "25%": 0.0,
+          "50%": 0.0,
+          "75%": 4.0,
+          "max": 8492430.0,
+          "nunique": 3341
+        }
+      },
+      "categorical": {
+        "author": {
+          "unique": 595552,
+          "top_value": "0-0-WasAlreadyTaken",
+          "frequency": 1
+        },
+        "first_model_created": {
+          "unique": 579780,
+          "top_value": "2022-03-02 23:29:05",
+          "frequency": 5767
+        },
+        "latest_model_created": {
+          "unique": 581780,
+          "top_value": "2022-03-02 23:29:05",
+          "frequency": 4241
+        },
+        "top_model": {
+          "unique": 595552,
+          "top_value": "0-0-WasAlreadyTaken/mobilenet_multilabel",
+          "frequency": 1
+        }
+      }
+    },
+    "outlier_info": {
+      "n_models": {
+        "outlier_count": 100419,
+        "lower_bound": -0.5,
+        "upper_bound": 3.5
+      },
+      "total_downloads_30d": {
+        "outlier_count": 86968,
+        "lower_bound": -12.0,
+        "upper_bound": 20.0
+      },
+      "total_downloads_all_time": {
+        "outlier_count": 109777,
+        "lower_bound": -103.5,
+        "upper_bound": 172.5
+      },
+      "total_likes": {
+        "outlier_count": 66752,
+        "lower_bound": 0.0,
+        "upper_bound": 0.0
+      },
+      "max_downloads_30d": {
+        "outlier_count": 63634,
+        "lower_bound": -9.0,
+        "upper_bound": 15.0
+      },
+      "total_trending_score": {
+        "outlier_count": 3239,
+        "lower_bound": 0.0,
+        "upper_bound": 0.0
+      },
+      "pct_gguf": {
+        "outlier_count": 30958,
+        "lower_bound": 0.0,
+        "upper_bound": 0.0
+      },
+      "pct_gated": {
+        "outlier_count": 16666,
+        "lower_bound": 0.0,
+        "upper_bound": 0.0
+      },
+      "pct_derivative": {
+        "outlier_count": 143362,
+        "lower_bound": 0.0,
+        "upper_bound": 0.0
+      },
+      "median_downloads_30d": {
+        "outlier_count": 57795,
+        "lower_bound": -6.0,
+        "upper_bound": 10.0
+      },
+      "_summary": {
+        "columns_with_outliers": 9
+      }
+    },
+    "potential_targets": [
+      "median_downloads_30d"
+    ]
+  },
+  "preprocessing_summary": {
+    "original_shape": [
+      595552,
+      15
+    ],
+    "after_dedup_rows": 595552,
+    "duplicates_removed": 0,
+    "numerical_features": [
+      "n_models",
+      "total_downloads_30d",
+      "total_downloads_all_time",
+      "total_likes",
+      "max_downloads_30d",
+      "total_trending_score",
+      "pct_gguf",
+      "pct_safetensors",
+      "pct_gated",
+      "pct_derivative",
+      "median_downloads_30d",
+      "first_model_created_year",
+      "first_model_created_month",
+      "first_model_created_day",
+      "first_model_created_hour",
+      "latest_model_created_year",
+      "latest_model_created_month",
+      "latest_model_created_day",
+      "latest_model_created_hour"
+    ],
+    "categorical_features": [
+      "author",
+      "top_model"
+    ],
+    "imputation": {
+      "numerical": "Median imputation applied",
+      "categorical": "Mode (most frequent) imputation applied"
+    },
+    "encoding": {
+      "method": "Hybrid Encoding (One-Hot for <=50 categories, Label/Drop for high-cardinality)",
+      "columns_encoded": [],
+      "high_cardinality_columns": [
+        "author",
+        "top_model"
+      ],
+      "dropped_id_columns": [
+        "author",
+        "top_model"
+      ]
+    },
+    "scaling": "StandardScaler (zero mean, unit variance)",
+    "label_classes": [],
+    "final_feature_count": 19
+  },
+  "recommendations": [
+    {
+      "model": "KMeans",
+      "reason": "Fast, scalable centroid-based clustering. Ideal for partitioning machine operational modes (e.g., normal, degraded, critical) from unlabeled sensor telemetry.",
+      "priority": 1
+    },
+    {
+      "model": "DBSCAN",
+      "reason": "Density-based algorithm that discovers clusters of arbitrary shape and automatically flags outliers as noise. Perfect for anomaly detection in manufacturing process data where defects are rare but critical.",
+      "priority": 2
+    }
+  ],
+  "all_model_results": {
+    "KMeans": {
+      "Silhouette Score": 0.9742,
+      "N Clusters": 3,
+      "N Noise Points": 0
+    },
+    "DBSCAN": {
+      "Silhouette Score": 0.8273,
+      "N Clusters": 2,
+      "N Noise Points": 4812
+    }
+  },
+  "metrics": {
+    "Silhouette Score": 0.9742,
+    "N Clusters": 3,
+    "N Noise Points": 0
+  },
+  "feature_importances": {},
+  "top_features": [],
+  "model_profile": {},
+  "insights": {
+    "data_profile": "The dataset contains 595,552 records across 15 features (11 numerical, 2 categorical). The dataset is complete \u2014 no missing values detected. Outliers were detected in 9 column(s) using the IQR method \u2014 these were retained for training but may warrant domain investigation.",
+    "task": "No target column was specified. The system applies Unsupervised Learning \u2014 discovering natural groupings in the data without predefined labels. Useful for operational mode detection and anomaly profiling.",
+    "model": "After training and comparing all recommended models, KMeans achieved the best performance. It formed 3 coherent clusters with a Silhouette Score of 0.9742 (scores near +1 indicate well-separated, compact clusters).",
+    "features": "Feature importance scores are not directly extractable for this model type. Consider using SHAP for model-agnostic explanations.",
+    "preprocessing": "Numerical missing values filled using median imputation. Categorical gaps filled using most-frequent (mode) strategy. All features standardised to zero mean and unit variance (StandardScaler). Final feature matrix contains 19 columns after encoding."
+  },
+  "actionable_recommendations": [
+    "Experiment with different K values using the Elbow Method to find the optimal cluster count.",
+    "Visualise clusters using PCA or t-SNE for interpretability.",
+    "Deploy the saved model via the FastAPI /predict endpoint for real-time inference.",
+    "Schedule periodic retraining as new data arrives to prevent model drift."
+  ],
+  "saved_model_path": "E:\\Adaptive Data Science Language Model\\saved_models\\best_clustering_model.pkl"
+}

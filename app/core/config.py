@@ -8,6 +8,9 @@ Uses environment variables with sensible defaults for industrial deployments.
 import os
 from pathlib import Path
 
+# Silence joblib/loky CPU count detection warning on Windows (wmic subprocess call)
+os.environ["LOKY_MAX_CPU_COUNT"] = str(os.cpu_count() or 4)
+
 # ── Project Root ──────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
