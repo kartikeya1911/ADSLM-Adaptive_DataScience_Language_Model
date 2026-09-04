@@ -10,7 +10,7 @@ Supported:
     Clustering     → Silhouette Score
     Time-Series    → RMSE, MAE
 
-Industrial Relevance (ABB):
+Industrial Relevance (Enterprise Industrial):
     - RMSE used in vibration prediction and energy consumption forecasting
     - F1-score critical where false negatives (missed faults) are costly
     - Silhouette Score assesses operational mode clustering quality
@@ -76,7 +76,8 @@ class EvaluationEngine:
 
     @staticmethod
     def _classify(y_true, y_pred) -> Dict[str, Any]:
-        avg = "binary" if len(np.unique(y_true)) == 2 else "weighted"
+        unique_vals = set(np.unique(y_true)).union(set(np.unique(y_pred)))
+        avg = "binary" if (len(unique_vals) == 2 and unique_vals == {0, 1}) else "weighted"
         return {
             "Accuracy":          round(float(accuracy_score(y_true, y_pred)), 4),
             "Precision":         round(float(precision_score(y_true, y_pred, average=avg, zero_division=0)), 4),

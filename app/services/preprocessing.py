@@ -13,7 +13,7 @@ Steps:
     6. Scale features (StandardScaler)
     7. Train / Test Split (80/20, stratified for classification)
 
-Industrial Relevance (ABB):
+Industrial Relevance (Enterprise Industrial):
     - Sensor readings often have NaN gaps during downtime → auto-imputed
     - Mixed numeric/categorical machine parameter data → auto-encoded
 """
@@ -112,10 +112,11 @@ class PreprocessingEngine:
             stratify = None
             if self.task_type == "Classification":
                 val_counts = y.value_counts()
-                if len(y) >= 5 and (val_counts.min() >= 2):
+                test_count = int(np.ceil(len(y) * DEFAULT_TEST_SIZE))
+                if len(y) >= 10 and (val_counts.min() >= 2) and (test_count >= len(val_counts)):
                     stratify = y
                 else:
-                    logger.warning("Class counts too small for stratified split — using unstratified split.")
+                    logger.warning("Class counts or sample size too small for stratified split — using unstratified split.")
 
             X_train, X_test, y_train, y_test = train_test_split(
                 X, y,

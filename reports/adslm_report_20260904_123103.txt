@@ -1,23 +1,23 @@
 ======================================================================
   ADSLM — ADAPTIVE DATA SCIENCE LANGUAGE MODEL
-  ABB Innovation Evaluation Report
-  Generated: 2026-09-02 10:16:22
+  Enterprise AI Evaluation Report
+  Generated: 2026-09-04 12:31:03
 ======================================================================
 
 ── PIPELINE OVERVIEW ─────────────────────────────────────────────
   Task Type    : Clustering
   Target Column: None
   Best Model   : KMeans
-  Best Score   : 0.9742
+  Best Score   : 0.946
 
 ── DATASET INSIGHT ───────────────────────────────────────────────
-  The dataset contains 595,552 records across 15 features (11 numerical, 2 categorical). The dataset is complete — no missing values detected. Outliers were detected in 9 column(s) using the IQR method — these were retained for training but may warrant domain investigation.
+  The dataset contains 164,808 records across 2 features (2 numerical, 0 categorical). The dataset is complete — no missing values detected. Outliers were detected in 1 column(s) using the IQR method — these were retained for training but may warrant domain investigation.
 
 ── TASK DETECTION ────────────────────────────────────────────────
   No target column was specified. The system applies Unsupervised Learning — discovering natural groupings in the data without predefined labels. Useful for operational mode detection and anomaly profiling.
 
 ── PREPROCESSING SUMMARY ─────────────────────────────────────────
-  Numerical missing values filled using median imputation. Categorical gaps filled using most-frequent (mode) strategy. All features standardised to zero mean and unit variance (StandardScaler). Final feature matrix contains 19 columns after encoding.
+  Numerical missing values filled using median imputation. All features standardised to zero mean and unit variance (StandardScaler). Final feature matrix contains 2 columns after encoding.
 
 ── MODEL RECOMMENDATIONS ─────────────────────────────────────────
   [1] KMeans
@@ -26,22 +26,35 @@
       → Density-based algorithm that discovers clusters of arbitrary shape and automatically flags outliers as noise. Perfect for anomaly detection in manufacturing process data where defects are rare but critical.
 
 ── PERFORMANCE METRICS ───────────────────────────────────────────
-  Silhouette Score         : 0.9742
+  Silhouette Score         : 0.946
   N Clusters               : 3
   N Noise Points           : 0
 
 ── AI MODEL INSIGHT ──────────────────────────────────────────────
-  After training and comparing all recommended models, KMeans achieved the best performance. It formed 3 coherent clusters with a Silhouette Score of 0.9742 (scores near +1 indicate well-separated, compact clusters).
+  After training and comparing all recommended models, KMeans achieved the best performance. It formed 3 coherent clusters with a Silhouette Score of 0.9460 (scores near +1 indicate well-separated, compact clusters).
 
 ── FEATURE INSIGHT ───────────────────────────────────────────────
   Feature importance scores are not directly extractable for this model type. Consider using SHAP for model-agnostic explanations.
 
+── BIG DATA TELEMETRY & SCALE ────────────────────────────────────
+  Throughput Speed : 48.5 MB/s (164,808 records)
+  PySpark RAM Req. : 512.0 MB (2 executors)
+  Partition Column : 'job_id' (4 partitions)
+  Storage Format   : Delta Lake / Apache Parquet (ACID compliant)
+
+── REGULATORY & AI GOVERNANCE AUDIT ──────────────────────────────
+  Compliance Rating: 75 / 100 (ISO 27001 Aligned)
+  EU AI Act Risk   : Minimal Risk (Unsupervised Data Exploratory Analytics)
+  GDPR Privacy     : Clean — No raw PII stored
+  Human Oversight  : Mandatory (Human operator must approve critical fault actions)
+      → Voluntary code of conduct and standard documentation.
+
 ── ACTIONABLE RECOMMENDATIONS ────────────────────────────────────
-  1. Experiment with different K values using the Elbow Method to find the optimal cluster count.
-  2. Visualise clusters using PCA or t-SNE for interpretability.
-  3. Deploy the saved model via the FastAPI /predict endpoint for real-time inference.
-  4. Schedule periodic retraining as new data arrives to prevent model drift.
+  1. Investigate extreme sensor spikes detected in columns ['job_id', 'industry_id'] via IQR bounds.
+  2. Evaluate cluster cohesion (Silhouette Score: 0.9460) using PCA 2D projections.
+  3. Partition Delta Lake tables on column 'job_id' for sub-second distributed telemetry queries.
+  4. Deploy the saved model binary via the FastAPI /orchestrate endpoint for production inference.
 
 ======================================================================
-  End of ADSLM Report | ABB Evaluation Submission
+  End of ADSLM Report | Enterprise AI Evaluation
 ======================================================================

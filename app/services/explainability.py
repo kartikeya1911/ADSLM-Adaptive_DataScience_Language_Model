@@ -5,7 +5,7 @@ Module  : Explainable AI (XAI) Module
 Purpose : Extracts model reasoning — feature importances, coefficient weights,
           model strengths and limitations. SHAP-ready architecture.
 
-Why XAI matters for ABB:
+Why XAI matters for Enterprise Industrial:
     - Engineers must understand WHY the model flags a fault
     - Regulatory compliance requires decision traceability
     - Enables engineers to trust and validate AI recommendations
@@ -168,6 +168,6 @@ class ExplainabilityEngine:
         """
         return (
             "SHAP (SHapley Additive exPlanations) is supported in the extended version. "
-            "It provides per-instance feature contribution explanations — ideal for ABB "
+            "It provides per-instance feature contribution explanations — ideal for Enterprise Industrial "
             "predictive maintenance use cases where individual asset decisions must be justified."
         )

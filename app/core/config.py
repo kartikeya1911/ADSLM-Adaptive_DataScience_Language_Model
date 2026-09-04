@@ -28,7 +28,7 @@ API_TITLE       = "ADSLM API"
 API_VERSION     = "1.0.0"
 API_DESCRIPTION = (
     "Adaptive Data Science Language Model — An industrial-grade AutoML + AI Copilot "
-    "system designed for ABB innovation evaluation."
+    "system designed for enterprise innovation evaluation."
 )
 
 # ── ML Defaults ───────────────────────────────────────────────────────────────

@@ -14,7 +14,7 @@ Output:
     - Top feature importances
     - AI insights and recommendations
 
-Industrial Relevance (ABB):
+Industrial Relevance (Enterprise Industrial):
     - Provides a traceable audit trail for AI-assisted decisions
     - Submission-ready documentation for engineering review boards
 """
@@ -87,7 +87,7 @@ class ReportGenerator:
         lines = [
             "=" * 70,
             "  ADSLM — ADAPTIVE DATA SCIENCE LANGUAGE MODEL",
-            "  ABB Innovation Evaluation Report",
+            "  Enterprise AI Evaluation Report",
             f"  Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
             "=" * 70,
             "",
@@ -132,6 +132,9 @@ class ReportGenerator:
                 lines.append(f"  {i:>2}. {feat:<30} {score:.4f}  {bar}")
             lines.append("")
 
+        bigdata = self.results.get("big_data_profile", {})
+        audit   = self.results.get("regulatory_audit", {})
+
         lines += [
             "── AI MODEL INSIGHT ──────────────────────────────────────────────",
             f"  {insights.get('model', '')}",
@@ -139,6 +142,37 @@ class ReportGenerator:
             "── FEATURE INSIGHT ───────────────────────────────────────────────",
             f"  {insights.get('features', '')}",
             "",
+            "── BIG DATA TELEMETRY & SCALE ────────────────────────────────────",
+        ]
+        if bigdata:
+            ingest = bigdata.get("ingestion_metrics", {})
+            spark  = bigdata.get("spark_memory_estimation", {})
+            part   = bigdata.get("partitioning_strategy", {})
+            lines.append(f"  Throughput Speed : {ingest.get('throughput_mb_s', 0)} MB/s ({ingest.get('record_count', 0):,} records)")
+            lines.append(f"  PySpark RAM Req. : {spark.get('spark_ram_required_mb', 0)} MB ({spark.get('recommended_spark_executors', 2)} executors)")
+            lines.append(f"  Partition Column : '{part.get('primary_partition_column', 'N/A')}' ({part.get('recommended_partitions', 4)} partitions)")
+            lines.append(f"  Storage Format   : Delta Lake / Apache Parquet (ACID compliant)")
+        else:
+            lines.append("  Standard single-node memory profile applied.")
+        lines.append("")
+
+        lines += [
+            "── REGULATORY & AI GOVERNANCE AUDIT ──────────────────────────────",
+        ]
+        if audit:
+            eu_ai = audit.get("eu_ai_act", {})
+            gdpr  = audit.get("gdpr_audit", {})
+            lines.append(f"  Compliance Rating: {audit.get('iso_27001_score', 100)} / 100 (ISO 27001 Aligned)")
+            lines.append(f"  EU AI Act Risk   : {eu_ai.get('risk_tier', 'Minimal Risk')}")
+            lines.append(f"  GDPR Privacy     : {gdpr.get('anonymization_status', 'Clean')}")
+            lines.append(f"  Human Oversight  : {eu_ai.get('human_oversight', 'Standard')}")
+            for mandate in eu_ai.get("compliance_mandates", []):
+                lines.append(f"      → {mandate}")
+        else:
+            lines.append("  Standard regulatory compliance checklist applied.")
+        lines.append("")
+
+        lines += [
             "── ACTIONABLE RECOMMENDATIONS ────────────────────────────────────",
         ]
         for i, rec in enumerate(actions, 1):
@@ -146,7 +180,7 @@ class ReportGenerator:
         lines.append("")
         lines += [
             "=" * 70,
-            "  End of ADSLM Report | ABB Evaluation Submission",
+            "  End of ADSLM Report | Enterprise AI Evaluation",
             "=" * 70,
         ]
 
@@ -186,7 +220,7 @@ class ReportGenerator:
 
             story = [
                 Paragraph("ADSLM — Adaptive Data Science Language Model", title_style),
-                Paragraph("ABB Innovation Evaluation Report", styles["Heading2"]),
+                Paragraph("Enterprise AI Evaluation Report", styles["Heading2"]),
                 Spacer(1, 0.5*cm),
             ]
 

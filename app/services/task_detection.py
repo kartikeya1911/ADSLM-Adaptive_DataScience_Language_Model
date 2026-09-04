@@ -10,7 +10,7 @@ Decision Rules:
     3. Target is categorical                → Classification
     4. Target is numerical                  → Regression (with smart binary override)
 
-Industrial Relevance (ABB):
+Industrial Relevance (Enterprise Industrial):
     - Predicts whether incoming sensor stream is forecasting, anomaly, or classification
 """
 

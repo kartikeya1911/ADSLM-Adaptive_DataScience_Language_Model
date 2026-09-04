@@ -10,7 +10,7 @@ Design:
     - Context-aware: different keys produce different simplifications
     - Easily extensible for new insight categories
 
-Industrial Relevance (ABB):
+Industrial Relevance (Enterprise Industrial):
     - Floor technicians need simple red/green indicators
     - Process engineers need moderate technical detail
     - Data scientists need full metric visibility

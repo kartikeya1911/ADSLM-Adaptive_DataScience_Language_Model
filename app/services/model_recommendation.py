@@ -11,7 +11,7 @@ Selection Criteria:
     - Problem type
     - Presence of missing data / imbalance
 
-Industrial Relevance (ABB):
+Industrial Relevance (Enterprise Industrial):
     - Guides engineers to the right algorithm for predictive maintenance
     - Avoids overpowered models for small sensor datasets
 """
@@ -105,7 +105,7 @@ class ModelRecommendationEngine:
                 "model": "Logistic Regression",
                 "reason": (
                     "Linear classifier providing high interpretability and fast training. "
-                    "Optimal as a baseline for fault/no-fault binary decisions in ABB systems."
+                    "Optimal as a baseline for fault/no-fault binary decisions in Enterprise Industrial systems."
                 ),
             },
             {

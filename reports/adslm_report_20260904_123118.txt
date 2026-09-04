@@ -1,0 +1,60 @@
+======================================================================
+  ADSLM — ADAPTIVE DATA SCIENCE LANGUAGE MODEL
+  Enterprise AI Evaluation Report
+  Generated: 2026-09-04 12:31:18
+======================================================================
+
+── PIPELINE OVERVIEW ─────────────────────────────────────────────
+  Task Type    : Clustering
+  Target Column: None
+  Best Model   : KMeans
+  Best Score   : 0.946
+
+── DATASET INSIGHT ───────────────────────────────────────────────
+  We uploaded your spreadsheet and checked it carefully. If there were any blank cells, we filled them in automatically so the AI could understand everything. Your data is now ready to learn from! 📊
+
+── TASK DETECTION ────────────────────────────────────────────────
+  We figured out what kind of question you are asking the AI. No target column was specified. The system applies Unsupervised Learning — discovering natural groupings in the data without predefined labels. Useful for operational mode detection and anomaly profiling.
+
+── PREPROCESSING SUMMARY ─────────────────────────────────────────
+  Before training, we cleaned up the data — removed duplicates, filled in blanks, and converted text labels to numbers so the AI can read them.
+
+── MODEL RECOMMENDATIONS ─────────────────────────────────────────
+  [1] KMeans
+      → Fast, scalable centroid-based clustering. Ideal for partitioning machine operational modes (e.g., normal, degraded, critical) from unlabeled sensor telemetry.
+  [2] DBSCAN
+      → Density-based algorithm that discovers clusters of arbitrary shape and automatically flags outliers as noise. Perfect for anomaly detection in manufacturing process data where defects are rare but critical.
+
+── PERFORMANCE METRICS ───────────────────────────────────────────
+  Silhouette Score         : 0.946
+  N Clusters               : 3
+  N Noise Points           : 0
+
+── AI MODEL INSIGHT ──────────────────────────────────────────────
+  We tested several AI 'brains' and picked the one that made the fewest mistakes on your data. Think of it like picking the best student for an exam — the one who got the most right answers wins! 🏆
+
+── FEATURE INSIGHT ───────────────────────────────────────────────
+  The AI noticed that a few columns in your spreadsheet are the most important clues for making a good guess. It focuses on those the most, just like a detective looking for the strongest evidence. 🔍
+
+── BIG DATA TELEMETRY & SCALE ────────────────────────────────────
+  Throughput Speed : 48.5 MB/s (164,808 records)
+  PySpark RAM Req. : 512.0 MB (2 executors)
+  Partition Column : 'job_id' (4 partitions)
+  Storage Format   : Delta Lake / Apache Parquet (ACID compliant)
+
+── REGULATORY & AI GOVERNANCE AUDIT ──────────────────────────────
+  Compliance Rating: 75 / 100 (ISO 27001 Aligned)
+  EU AI Act Risk   : Minimal Risk (Unsupervised Data Exploratory Analytics)
+  GDPR Privacy     : Clean — No raw PII stored
+  Human Oversight  : Mandatory (Human operator must approve critical fault actions)
+      → Voluntary code of conduct and standard documentation.
+
+── ACTIONABLE RECOMMENDATIONS ────────────────────────────────────
+  1. Investigate extreme sensor spikes detected in columns ['job_id', 'industry_id'] via IQR bounds.
+  2. Evaluate cluster cohesion (Silhouette Score: 0.9460) using PCA 2D projections.
+  3. Partition Delta Lake tables on column 'job_id' for sub-second distributed telemetry queries.
+  4. Deploy the saved model binary via the FastAPI /orchestrate endpoint for production inference.
+
+======================================================================
+  End of ADSLM Report | Enterprise AI Evaluation
+======================================================================

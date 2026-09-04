@@ -253,6 +253,7 @@ curl -X POST http://localhost:8000/orchestrate \
 | **Classification** | Logistic Regression, Random Forest Classifier, XGBoost Classifier, SVM |
 | **Clustering** | KMeans, DBSCAN |
 | **Time-Series** | ARIMA, Prophet *(extensible)* |
+| **Time-Series** | ARIMA, Prophet |
 
 > Adding a new model requires only one line in the `model_registry` — zero changes to the rest of the pipeline.
 
@@ -264,15 +265,15 @@ curl -X POST http://localhost:8000/orchestrate \
 |-------|----------|-------------|
 | **Beginner** | Non-technical stakeholders | Plain English, no jargon, real-world analogies, emoji indicators |
 | **Intermediate** | Data-aware professionals | Natural language with moderate technical detail (default) |
-| **Expert** | Data scientists / ML engineers | Full statistical depth, architecture notes, engineering caveats, hyperparameter context |
+| **Expert** | Data scientists / ML engineers | Full statistical depth, architecture notes, engineering caveats |
 
 ---
 
 ## 📁 Dataset
 
-**File:** `datasets/abb_predictive_maintenance.csv`
+**File:** `datasets/predictive_maintenance.csv`
 
-A 50-record industrial sample dataset simulating ABB sensor telemetry with the following characteristics:
+An industrial sample dataset simulating equipment sensor telemetry with the following characteristics:
 
 - Sensor readings (temperature, vibration, pressure, etc.)
 - Operational labels (`Fault` column: `No Fault`, `Bearing Wear`, `Critical`)
@@ -281,34 +282,31 @@ A 50-record industrial sample dataset simulating ABB sensor telemetry with the f
 
 ---
 
-## 🏭 Industrial Relevance (ABB)
+## 🏭 Industrial Relevance & Regulatory Compliance
 
-| ABB Domain | How ADSLM Helps |
-|------------|----------------|
-| **Predictive Maintenance** | Classify faults (`Bearing Wear`, `Critical`, `No Fault`) from sensor telemetry |
+| Domain / Governance | How ADSLM Helps |
+|---------------------|----------------|
+| **Predictive Maintenance** | Classify faults (`Bearing Wear`, `Critical`, `No Fault`) from high-frequency sensor telemetry |
 | **Energy Management** | Regression on power consumption, load forecasting, efficiency prediction |
 | **Anomaly Detection** | Clustering unlabeled operational sensor streams (normal / degraded / critical) |
-| **Production Quality** | Binary classification (Pass/Fail) on production line measurements |
-| **Process Forecasting** | Time-Series prediction of KPIs over shift schedules |
-| **Asset Health Scoring** | Regression on Remaining Useful Life (RUL) |
+| **EU AI Act (2024/2026)** | Automated Risk Classification (Category 3 High-Risk for Asset Safety) + Mandatory Human Oversight rules |
+| **GDPR Privacy Audit** | Automated regex scanning for PII (emails, IPs, phone numbers) with auto-anonymization flags |
+| **ISO 27001 Traceability** | 0–100 Compliance Score audit logging, data leakage protection, and reproducible model cards |
+| **Big Data Streaming** | Ingestion throughput telemetry (MB/s), Delta Lake / Apache Parquet partitioning strategies |
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology | Version | Purpose |
-|-------|-----------|---------|---------|
-| **API Framework** | FastAPI | 0.111.0 | Async, typed, auto-documented REST API |
-| **ASGI Server** | Uvicorn | 0.30.1 | Production ASGI server |
-| **Frontend** | Streamlit | 1.35.0 | Interactive data science UI |
-| **Data** | Pandas | 2.2.2 | DataFrame operations |
-| **Numerics** | NumPy | 1.26.4 | Array computation |
-| **ML** | Scikit-learn | 1.5.0 | Models, preprocessing, metrics |
-| **Boosting** | XGBoost | 2.0.3 | Gradient boosting models |
-| **Model I/O** | Joblib | 1.4.2 | Model serialization |
-| **Visualization** | Plotly | 5.22.0 | Interactive charts |
-| **Reporting** | ReportLab | 4.2.0 | PDF generation |
-| **Validation** | Pydantic | 2.7.4 | Request/response models |
+| Layer | Technology |
+|-------|-----------|
+| **API Framework** | FastAPI |
+| **Frontend** | Streamlit |
+| **Governance Engine** | RegulatoryComplianceEngine |
+| **ML & Boosting** | Scikit-learn, XGBoost |
+| **Data & Numerics** | Pandas, NumPy |
+| **Visualization** | Plotly |
+| **Reporting** | ReportLab |
 
 ---
 
@@ -316,25 +314,24 @@ A 50-record industrial sample dataset simulating ABB sensor telemetry with the f
 
 | Feature | Description |
 |---------|-------------|
-| **SHAP Integration** | Replace feature importance stubs with SHAP TreeExplainer for game-theoretic explanations |
-| **Hyperparameter Tuning** | Add Optuna or GridSearchCV for automated HPO |
-| **MLflow Tracking** | Experiment tracking, model versioning, artifact logging |
-| **Time-Series** | Full ARIMA / Prophet implementation for temporal datasets |
-| **Docker** | Containerise FastAPI + Streamlit for reproducible deployments |
-| **Database** | Store pipeline results and model metadata in PostgreSQL |
-| **Real-time Inference** | WebSocket support for streaming predictions |
-| **Cloud Deploy** | Azure AKS / AWS ECS with horizontal pod autoscaling |
-| **LLM Insights** | Replace rule-based insight generator with GPT-4 / Gemini for richer narratives |
+| **Delta Lake Ingestion** | Connector for streaming telemetry from Azure Event Hubs / Kafka |
+| **PySpark MLlib** | Distributed training for multi-terabyte datasets |
+| **SHAP Integration** | Model-agnostic feature explanations |
+| **MLflow Registry** | Production model versioning and rollback |
+| **Kubernetes Scaling** | Azure AKS deployment with Horizontal Pod Autoscaler |
 
 ---
 
 ## 💼 Interview Talking Points
 
-**Q: What makes this "adaptive"?**
-> The system adapts at **three levels**: (1) *task type* — the same pipeline handles Regression, Classification, Clustering, and Time-Series; (2) *model selection* — recommendations change based on dataset size and feature mix; (3) *output language* — the same insights are rewritten for Beginner / Intermediate / Expert audiences.
+**Q: How does ADSLM address Big Data requirements?**
+> The `BigDataEngine` profiles dataset volume and ingestion throughput (MB/s), calculates PySpark JVM memory requirements, and generates optimal Delta Lake / Apache Parquet partitioning strategies for high-frequency industrial telemetry.
 
-**Q: How does explainability work?**
-> The `ExplainabilityEngine` extracts `feature_importances_` from tree-based models or `|coef_|` from linear models, ranks them by magnitude, and generates a human-readable narrative. The model profile module provides strengths/limitations text for every supported estimator.
+**Q: How does ADSLM ensure Regulatory Compliance?**
+> The `RegulatoryComplianceEngine` performs automated governance audits: (1) **EU AI Act**: classifies model risk tiers and mandates human oversight; (2) **GDPR**: scans for PII and flags anonymization requirements; (3) **ISO 27001**: computes an auditability score (0–100) covering logging, XAI lineage, and data leakage isolation.
+
+**Q: What makes this "adaptive"?**
+> The system adapts at **three levels**: (1) *task type* — handles Regression, Classification, Clustering, and Time-Series; (2) *dataset scale* — adapts preprocessing (hybrid encoding for high-cardinality ID columns) and model parameters (`n_jobs=-1`, sample caps); (3) *audience* — rewrites insights for Beginner, Intermediate, and Expert stakeholders.
 
 **Q: How is this production-grade?**
 > Config-driven constants (`config.py`), centralized UTF-8 logging (`logger.py`), `NumpyEncoder` for safe JSON serialization, stratified splits to prevent data leakage, `joblib` model serialization, modular router architecture, and structured error handling at every pipeline stage.

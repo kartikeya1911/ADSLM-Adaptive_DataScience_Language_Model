@@ -10,7 +10,7 @@ from app.services.explainability import ExplainabilityEngine
 from app.services.insight_generator import InsightGenerator
 from app.services.expertise_adaptation import ExpertiseAdapter
 
-df = pd.read_csv("datasets/abb_predictive_maintenance.csv")
+df = pd.read_csv("datasets/predictive_maintenance.csv")
 buf = io.StringIO(df.to_csv(index=False))
 
 # 1. Analyze

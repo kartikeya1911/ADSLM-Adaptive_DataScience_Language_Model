@@ -9,7 +9,7 @@ Architecture:
     - EvaluationEngine integration for metric computation
     - joblib for serialisation of best model
 
-Industrial Relevance (ABB):
+Industrial Relevance (Enterprise Industrial):
     - Automates model selection for predictive maintenance pipelines
     - Modular design allows plugging in custom estimators (e.g., LSTM, AutoML)
 """

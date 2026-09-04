@@ -18,12 +18,14 @@ import pandas as pd
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 
+from app.services.bigdata_engine       import BigDataEngine
 from app.services.dataset_analyzer    import DatasetAnalyzer
 from app.services.expertise_adaptation import ExpertiseAdapter
 from app.services.explainability      import ExplainabilityEngine
 from app.services.insight_generator   import InsightGenerator
 from app.services.model_recommendation import ModelRecommendationEngine
 from app.services.preprocessing       import PreprocessingEngine
+from app.services.regulatory_compliance import RegulatoryComplianceEngine
 from app.services.report_generator    import ReportGenerator
 from app.services.task_detection      import TaskDetector
 from app.services.training            import TrainingEngine
@@ -54,6 +56,11 @@ async def analyze_dataset(file: UploadFile = File(...)):
     try:
         analyzer = DatasetAnalyzer(io.StringIO(contents))
         stats    = analyzer.analyze()
+        df       = pd.read_csv(io.StringIO(contents))
+        bd       = BigDataEngine(df, len(contents.encode('utf-8'))).analyze_scale()
+        rc       = RegulatoryComplianceEngine(df).run_audit()
+        stats["big_data_profile"]   = bd
+        stats["regulatory_audit"]  = rc
     except Exception as e:
         raise HTTPException(status_code=422, detail=f"Analysis failed: {e}")
 
@@ -79,8 +86,9 @@ async def run_full_pipeline(
     6. Explainability (Feature Importance)
     7. Natural Language Insight Generation
     8. Expertise-level Adaptation
-    9. Report Generation
-    10. Return consolidated JSON response
+    9. Big Data Telemetry & Regulatory Compliance Audit
+    10. Report Generation
+    11. Return consolidated JSON response
     """
     logger.info(f"Pipeline triggered | target='{target_column}' | expertise='{expertise_level}'")
 
@@ -149,7 +157,14 @@ async def run_full_pipeline(
             logger.warning(f"Explainability step failed: {e}")
             feature_importances = {"_note": "Could not extract importances for this model."}
 
-    # ── 7. Insight Generation ─────────────────────────────────────────────────
+    # ── 7. Big Data Telemetry & Regulatory Audit ──────────────────────────────
+    bigdata_profiler = BigDataEngine(df, len(contents.encode('utf-8')))
+    big_data_profile = bigdata_profiler.analyze_scale()
+
+    compliance_engine = RegulatoryComplianceEngine(df, task_type, target_column or "")
+    regulatory_audit  = compliance_engine.run_audit(has_xai=bool(top_features))
+
+    # ── 8. Insight Generation ─────────────────────────────────────────────────
     base_insights = {
         "data_profile":  InsightGenerator.generate_data_profile_insights(analysis_stats),
         "task":          InsightGenerator.generate_task_insight(task_type, target_column),
@@ -159,13 +174,19 @@ async def run_full_pipeline(
     }
 
     actionable_recs = InsightGenerator.generate_actionable_recommendations(
-        task_type, best_metrics, prep_summary
+        task_type=task_type,
+        metrics=best_metrics,
+        prep_summary=prep_summary,
+        analysis=analysis_stats,
+        top_features=top_features,
+        regulatory_audit=regulatory_audit,
+        big_data_profile=big_data_profile,
     )
 
-    # ── 8. Expertise Adaptation ───────────────────────────────────────────────
+    # ── 9. Expertise Adaptation ───────────────────────────────────────────────
     adapted_insights = ExpertiseAdapter.adapt_insights(base_insights, expertise_level)
 
-    # ── 9. Build & Save Report ────────────────────────────────────────────────
+    # ── 10. Build & Save Report ───────────────────────────────────────────────
     full_response = {
         "metadata": {
             "task_type":     task_type,
@@ -184,6 +205,8 @@ async def run_full_pipeline(
         "model_profile":             model_summary,
         "insights":                  adapted_insights,
         "actionable_recommendations":actionable_recs,
+        "big_data_profile":          big_data_profile,
+        "regulatory_audit":          regulatory_audit,
         "saved_model_path":          training_results.get("saved_model_path"),
     }
 

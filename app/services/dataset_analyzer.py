@@ -5,7 +5,7 @@ Module  : Dataset Analyzer
 Purpose : Automatically reads and profiles any uploaded CSV dataset.
           Detects shape, dtypes, nulls, outliers, duplicates, and potential targets.
 
-Industrial Relevance (ABB):
+Industrial Relevance (Enterprise Industrial):
     - Sensor data ingestion profiling
     - Predictive maintenance dataset health checks
     - Manufacturing quality inspection data auditing

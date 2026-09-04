@@ -1,0 +1,60 @@
+======================================================================
+  ADSLM — ADAPTIVE DATA SCIENCE LANGUAGE MODEL
+  Enterprise AI Evaluation Report
+  Generated: 2026-09-04 12:31:29
+======================================================================
+
+── PIPELINE OVERVIEW ─────────────────────────────────────────────
+  Task Type    : Clustering
+  Target Column: None
+  Best Model   : KMeans
+  Best Score   : 0.946
+
+── DATASET INSIGHT ───────────────────────────────────────────────
+  The dataset contains 164,808 records across 2 features (2 numerical, 0 categorical). The dataset is complete — no missing values detected. Outliers were detected in 1 column(s) using the IQR method — these were retained for training but may warrant domain investigation. | Pipeline: median imputation for continuous features (resistant to skew), mode imputation for categoricals. IQR-based outlier flagging applied. One-Hot Encoding via pd.get_dummies (drop_first=True to avoid multicollinearity).
+
+── TASK DETECTION ────────────────────────────────────────────────
+  No target column was specified. The system applies Unsupervised Learning — discovering natural groupings in the data without predefined labels. Useful for operational mode detection and anomaly profiling. | Stratified 80/20 train-test split applied (stratify=y for classification). No data leakage — preprocessing fit exclusively on training fold.
+
+── PREPROCESSING SUMMARY ─────────────────────────────────────────
+  Numerical missing values filled using median imputation. All features standardised to zero mean and unit variance (StandardScaler). Final feature matrix contains 2 columns after encoding. | StandardScaler fitted on X_train only; transform applied to both train/test to prevent test-set leakage. Boolean dummy columns cast to int8 for memory efficiency.
+
+── MODEL RECOMMENDATIONS ─────────────────────────────────────────
+  [1] KMeans
+      → Fast, scalable centroid-based clustering. Ideal for partitioning machine operational modes (e.g., normal, degraded, critical) from unlabeled sensor telemetry.
+  [2] DBSCAN
+      → Density-based algorithm that discovers clusters of arbitrary shape and automatically flags outliers as noise. Perfect for anomaly detection in manufacturing process data where defects are rare but critical.
+
+── PERFORMANCE METRICS ───────────────────────────────────────────
+  Silhouette Score         : 0.946
+  N Clusters               : 3
+  N Noise Points           : 0
+
+── AI MODEL INSIGHT ──────────────────────────────────────────────
+  After training and comparing all recommended models, KMeans achieved the best performance. It formed 3 coherent clusters with a Silhouette Score of 0.9460 (scores near +1 indicate well-separated, compact clusters). | Model selection criterion: weighted F1 (classification) or RMSE (regression). All models trained with default hyperparameters; recommend GridSearchCV / Optuna for production hyperparameter optimisation.
+
+── FEATURE INSIGHT ───────────────────────────────────────────────
+  Feature importance scores are not directly extractable for this model type. Consider using SHAP for model-agnostic explanations. | Importances sourced from estimator's native feature_importances_ (tree-based) or mean(|coef_|) (linear). For model-agnostic explanations, integrate SHAP TreeExplainer / KernelExplainer.
+
+── BIG DATA TELEMETRY & SCALE ────────────────────────────────────
+  Throughput Speed : 48.5 MB/s (164,808 records)
+  PySpark RAM Req. : 512.0 MB (2 executors)
+  Partition Column : 'job_id' (4 partitions)
+  Storage Format   : Delta Lake / Apache Parquet (ACID compliant)
+
+── REGULATORY & AI GOVERNANCE AUDIT ──────────────────────────────
+  Compliance Rating: 75 / 100 (ISO 27001 Aligned)
+  EU AI Act Risk   : Minimal Risk (Unsupervised Data Exploratory Analytics)
+  GDPR Privacy     : Clean — No raw PII stored
+  Human Oversight  : Mandatory (Human operator must approve critical fault actions)
+      → Voluntary code of conduct and standard documentation.
+
+── ACTIONABLE RECOMMENDATIONS ────────────────────────────────────
+  1. Investigate extreme sensor spikes detected in columns ['job_id', 'industry_id'] via IQR bounds.
+  2. Evaluate cluster cohesion (Silhouette Score: 0.9460) using PCA 2D projections.
+  3. Partition Delta Lake tables on column 'job_id' for sub-second distributed telemetry queries.
+  4. Deploy the saved model binary via the FastAPI /orchestrate endpoint for production inference.
+
+======================================================================
+  End of ADSLM Report | Enterprise AI Evaluation
+======================================================================

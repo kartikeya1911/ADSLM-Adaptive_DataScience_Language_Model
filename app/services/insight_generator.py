@@ -12,7 +12,7 @@ Output Examples:
     "12.3% of records had missing values, which were automatically imputed
      to preserve data integrity."
 
-Industrial Relevance (ABB):
+Industrial Relevance (Enterprise Industrial):
     - Provides non-expert engineers with plain-English summaries
     - Reduces the gap between data science outputs and operational decisions
 """
@@ -198,33 +198,80 @@ class InsightGenerator:
 
     @staticmethod
     def generate_actionable_recommendations(
-        task_type: str, metrics: Dict[str, Any], prep_summary: Dict[str, Any]
+        task_type: str,
+        metrics: Dict[str, Any],
+        prep_summary: Dict[str, Any],
+        analysis: Dict[str, Any] = None,
+        top_features: List[Dict[str, Any]] = None,
+        regulatory_audit: Dict[str, Any] = None,
+        big_data_profile: Dict[str, Any] = None,
     ) -> List[str]:
-        """Returns a list of actionable next-step recommendations."""
+        """Returns a dynamic, dataset-specific list of actionable next-step recommendations."""
         recs = []
 
+        # 1. Feature-specific recommendation
+        if top_features and len(top_features) > 0:
+            top_names = [f"'{f['feature']}'" for f in top_features[:2]]
+            recs.append(f"Focus sensor calibration and quality assurance on top predictive features: {', '.join(top_names)}.")
+
+        # 2. Data Health & Preprocessing recommendations
+        if analysis:
+            mv = {k: v for k, v in analysis.get("missing_values", {}).items() if k != "_summary"}
+            if mv:
+                top_miss = list(mv.keys())[:2]
+                recs.append(f"Address missing data in columns {top_miss} using automated sensor telemetry interpolation.")
+
+            oi = {k: v for k, v in analysis.get("outlier_info", {}).items() if k != "_summary"}
+            if oi:
+                top_out = list(oi.keys())[:2]
+                recs.append(f"Investigate extreme sensor spikes detected in columns {top_out} via IQR bounds.")
+
+        if prep_summary and prep_summary.get("dropped_id_columns"):
+            recs.append(f"High-cardinality ID columns {prep_summary['dropped_id_columns']} were safely excluded from feature scaling.")
+
+        # 3. Task & Performance recommendations
         if task_type == "Classification":
             f1 = metrics.get("F1-score", 1.0)
-            if f1 < 0.75:
-                recs.append("Consider collecting more labelled samples — F1 below 0.75 suggests insufficient training data.")
-            recs.append("Run cross-validation (5-fold) to validate model stability across data splits.")
-            recs.append("Investigate class imbalance — use SMOTE or class weighting if fault class is rare.")
+            acc = metrics.get("Accuracy", 1.0)
+            if f1 >= 0.85:
+                recs.append(f"Model achieved strong performance (F1-score: {f1:.4f}, Accuracy: {acc:.2%}); set up model drift monitoring in production.")
+            else:
+                recs.append(f"F1-score ({f1:.4f}) indicates room for improvement; apply SMOTE oversampling or hyperparameter tuning with Optuna.")
 
         elif task_type == "Regression":
-            r2 = metrics.get("R2", 1.0)
-            if r2 < 0.6:
-                recs.append("R² is low — consider engineering domain-specific features or using polynomial feature expansion.")
-            recs.append("Plot residuals to check for heteroscedasticity (non-constant error variance).")
+            r2 = metrics.get("R2", 0.0)
+            rmse = metrics.get("RMSE", 0.0)
+            if r2 >= 0.7:
+                recs.append(f"Regression model explains {r2*100:.1f}% of variance (RMSE: {rmse:.4f}); ready for load forecasting.")
+            else:
+                recs.append(f"R² ({r2:.4f}) is low; consider engineering non-linear feature interactions.")
 
         elif task_type == "Clustering":
-            recs.append("Experiment with different K values using the Elbow Method to find the optimal cluster count.")
-            recs.append("Visualise clusters using PCA or t-SNE for interpretability.")
+            sil = metrics.get("Silhouette Score", 0.0)
+            recs.append(f"Evaluate cluster cohesion (Silhouette Score: {sil:.4f}) using PCA 2D projections.")
 
         elif task_type == "Time-Series":
-            recs.append("Evaluate stationarity using the Augmented Dickey-Fuller test before applying ARIMA.")
-            recs.append("Consider adding lagged features and rolling statistics for richer temporal context.")
+            rmse = metrics.get("RMSE", 0.0)
+            recs.append(f"Validate time-series forecasting (RMSE: {rmse:.4f}) against rolling shift schedules.")
 
-        recs.append("Deploy the saved model via the FastAPI /predict endpoint for real-time inference.")
-        recs.append("Schedule periodic retraining as new data arrives to prevent model drift.")
+        # 4. Regulatory & Governance recommendations
+        if regulatory_audit:
+            gdpr = regulatory_audit.get("gdpr_audit", {})
+            if gdpr.get("pii_detected"):
+                pii_cols = [f["column"] for f in gdpr.get("flagged_pii_columns", [])]
+                recs.append(f"GDPR Action Required: Anonymize or hash PII in columns {pii_cols} before deployment.")
+
+            eu_ai = regulatory_audit.get("eu_ai_act", {})
+            if eu_ai.get("risk_badge") == "HIGH_RISK":
+                recs.append("EU AI Act High-Risk System: Implement human-in-the-loop approval workflows for automated asset control.")
+
+        # 5. Big Data Recommendation
+        if big_data_profile:
+            part = big_data_profile.get("partitioning_strategy", {}).get("primary_partition_column")
+            if part:
+                recs.append(f"Partition Delta Lake tables on column '{part}' for sub-second distributed telemetry queries.")
+
+        # 6. Production Deployment
+        recs.append("Deploy the saved model binary via the FastAPI /orchestrate endpoint for production inference.")
 
         return recs

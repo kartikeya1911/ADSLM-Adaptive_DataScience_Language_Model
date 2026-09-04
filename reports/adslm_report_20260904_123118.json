@@ -1,0 +1,210 @@
+{
+  "metadata": {
+    "task_type": "Clustering",
+    "target_column": null,
+    "best_model": "KMeans",
+    "best_score": 0.946,
+    "expertise_level": "beginner"
+  },
+  "analysis": {
+    "basic_info": {
+      "row_count": 164808,
+      "column_count": 2,
+      "columns": [
+        "job_id",
+        "industry_id"
+      ],
+      "dtypes": {
+        "job_id": "int64",
+        "industry_id": "int64"
+      },
+      "duplicate_rows": 0,
+      "memory_mb": 2.637
+    },
+    "missing_values": {
+      "_summary": {
+        "total_missing_cells": 0,
+        "overall_missing_pct": 0.0
+      }
+    },
+    "column_types": {
+      "numerical": [
+        "job_id",
+        "industry_id"
+      ],
+      "categorical": [],
+      "datetime": []
+    },
+    "summary_statistics": {
+      "numerical": {
+        "job_id": {
+          "count": 164808.0,
+          "mean": 3897074144.9524,
+          "std": 76249300.5006,
+          "min": 921716.0,
+          "25%": 3894876310.0,
+          "50%": 3902342291.5,
+          "75%": 3904718771.25,
+          "max": 3906267224.0,
+          "nunique": 127125
+        },
+        "industry_id": {
+          "count": 164808.0,
+          "mean": 196.1553,
+          "std": 594.2309,
+          "min": 1.0,
+          "25%": 17.0,
+          "50%": 44.0,
+          "75%": 96.0,
+          "max": 3253.0,
+          "nunique": 422
+        }
+      },
+      "categorical": {}
+    },
+    "outlier_info": {
+      "job_id": {
+        "outlier_count": 708,
+        "lower_bound": 3880112618.125,
+        "upper_bound": 3919482463.125
+      },
+      "industry_id": {
+        "outlier_count": 10603,
+        "lower_bound": -101.5,
+        "upper_bound": 214.5
+      },
+      "_summary": {
+        "columns_with_outliers": 1
+      }
+    },
+    "potential_targets": [
+      "industry_id"
+    ]
+  },
+  "preprocessing_summary": {
+    "original_shape": [
+      164808,
+      2
+    ],
+    "after_dedup_rows": 164808,
+    "duplicates_removed": 0,
+    "numerical_features": [
+      "job_id",
+      "industry_id"
+    ],
+    "categorical_features": [],
+    "imputation": {
+      "numerical": "Median imputation applied"
+    },
+    "encoding": {
+      "method": "Hybrid Encoding (One-Hot for <=50 categories, Label/Drop for high-cardinality)",
+      "columns_encoded": []
+    },
+    "scaling": "StandardScaler (zero mean, unit variance)",
+    "label_classes": [],
+    "final_feature_count": 2
+  },
+  "recommendations": [
+    {
+      "model": "KMeans",
+      "reason": "Fast, scalable centroid-based clustering. Ideal for partitioning machine operational modes (e.g., normal, degraded, critical) from unlabeled sensor telemetry.",
+      "priority": 1
+    },
+    {
+      "model": "DBSCAN",
+      "reason": "Density-based algorithm that discovers clusters of arbitrary shape and automatically flags outliers as noise. Perfect for anomaly detection in manufacturing process data where defects are rare but critical.",
+      "priority": 2
+    }
+  ],
+  "all_model_results": {
+    "KMeans": {
+      "Silhouette Score": 0.946,
+      "N Clusters": 3,
+      "N Noise Points": 0
+    },
+    "DBSCAN": {
+      "Silhouette Score": 0.9175,
+      "N Clusters": 2,
+      "N Noise Points": 5
+    }
+  },
+  "metrics": {
+    "Silhouette Score": 0.946,
+    "N Clusters": 3,
+    "N Noise Points": 0
+  },
+  "feature_importances": {},
+  "top_features": [],
+  "model_profile": {},
+  "insights": {
+    "data_profile": "We uploaded your spreadsheet and checked it carefully. If there were any blank cells, we filled them in automatically so the AI could understand everything. Your data is now ready to learn from! \ud83d\udcca",
+    "task": "We figured out what kind of question you are asking the AI. No target column was specified. The system applies Unsupervised Learning \u2014 discovering natural groupings in the data without predefined labels. Useful for operational mode detection and anomaly profiling.",
+    "model": "We tested several AI 'brains' and picked the one that made the fewest mistakes on your data. Think of it like picking the best student for an exam \u2014 the one who got the most right answers wins! \ud83c\udfc6",
+    "features": "The AI noticed that a few columns in your spreadsheet are the most important clues for making a good guess. It focuses on those the most, just like a detective looking for the strongest evidence. \ud83d\udd0d",
+    "preprocessing": "Before training, we cleaned up the data \u2014 removed duplicates, filled in blanks, and converted text labels to numbers so the AI can read them."
+  },
+  "actionable_recommendations": [
+    "Investigate extreme sensor spikes detected in columns ['job_id', 'industry_id'] via IQR bounds.",
+    "Evaluate cluster cohesion (Silhouette Score: 0.9460) using PCA 2D projections.",
+    "Partition Delta Lake tables on column 'job_id' for sub-second distributed telemetry queries.",
+    "Deploy the saved model binary via the FastAPI /orchestrate endpoint for production inference."
+  ],
+  "big_data_profile": {
+    "ingestion_metrics": {
+      "dataset_size_mb": 2.39,
+      "record_count": 164808,
+      "feature_count": 2,
+      "throughput_mb_s": 48.5,
+      "est_ingestion_time_sec": 0.0493,
+      "telemetry_stream_ready": true
+    },
+    "spark_memory_estimation": {
+      "spark_ram_required_mb": 512.0,
+      "recommended_spark_executors": 2,
+      "recommended_executor_memory": "4g",
+      "cluster_framework": "Apache Spark (PySpark) / Delta Lake"
+    },
+    "partitioning_strategy": {
+      "primary_partition_column": "job_id",
+      "recommended_partitions": 4,
+      "rationale": "Partition by column 'job_id' across worker nodes."
+    },
+    "storage_recommendations": [
+      {
+        "format": "Delta Lake / Apache Parquet",
+        "purpose": "Primary columnar storage format with ACID transactions and Snappy compression.",
+        "benefit": "Reduces disk storage by 70-80% compared to raw CSV and enables time-travel query audits."
+      },
+      {
+        "format": "Apache Avro / Event Hubs",
+        "purpose": "Real-time streaming ingestion protocol for IoT sensor telemetry.",
+        "benefit": "Schema evolution support for streaming industrial sensor updates."
+      },
+      {
+        "format": "Distributed Model Format (MLflow / ONNX)",
+        "purpose": "Standardized cross-platform model artifact format for deployment at edge devices.",
+        "benefit": "Enables zero-latency inference directly on Enterprise Industrial edge controllers."
+      }
+    ]
+  },
+  "regulatory_audit": {
+    "iso_27001_score": 75,
+    "gdpr_audit": {
+      "status": "COMPLIANT",
+      "pii_detected": false,
+      "flagged_pii_columns": [],
+      "anonymization_status": "Clean \u2014 No raw PII stored"
+    },
+    "eu_ai_act": {
+      "risk_tier": "Minimal Risk (Unsupervised Data Exploratory Analytics)",
+      "risk_badge": "MINIMAL_RISK",
+      "human_oversight": "Mandatory (Human operator must approve critical fault actions)",
+      "transparency_level": "High (XAI Feature Importances & Audit Report Generated)",
+      "compliance_mandates": [
+        "Voluntary code of conduct and standard documentation."
+      ]
+    },
+    "governance_summary": "Regulatory Compliance Score: 75/100. EU AI Act Classification: Minimal Risk (Unsupervised Data Exploratory Analytics). GDPR Privacy Audit: Clean \u2014 No raw PII stored. All model runs are logged to an immutable audit trail for governance review."
+  },
+  "saved_model_path": "E:\\Adaptive Data Science Language Model\\saved_models\\best_clustering_model.pkl"
+}
