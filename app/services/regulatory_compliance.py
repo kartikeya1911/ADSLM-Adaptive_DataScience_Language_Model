@@ -94,35 +94,43 @@ class RegulatoryComplianceEngine:
     def _eu_ai_act_audit(self) -> Dict[str, Any]:
         """Classifies AI System under EU AI Act guidelines (Regulation 2024/1689)."""
         target_lower = str(self.target_column).lower()
+        all_cols_lower = " ".join([str(c).lower() for c in self.df.columns])
 
-        # Predictive maintenance or safety critical equipment classification
-        if any(term in target_lower for term in ["fault", "critical", "failure", "defect", "safety", "hazard"]) or self.task_type == "Classification":
+        high_risk_keywords = ["fault", "critical", "failure", "defect", "safety", "hazard", 
+                              "medical", "health", "biometric", "credit", "employment", "recruitment", "brake", "vibration"]
+
+        # High risk: safety critical, industrial safety, or sensitive decision automation
+        if any(term in target_lower for term in high_risk_keywords) or any(term in all_cols_lower for term in ["fault", "failure", "hazard"]):
             risk_tier = "High Risk (Category 3 — Industrial Safety & Asset Infrastructure)"
             risk_badge = "HIGH_RISK"
+            human_oversight = "Mandatory (Human operator must approve critical automated actions)"
             obligations = [
                 "Article 13: High-level transparency and user technical documentation mandatory.",
                 "Article 14: Human-in-the-loop oversight mechanism required for override decisions.",
                 "Article 15: Cyber-resilience, accuracy verification, and continuous logging required.",
             ]
-        elif self.task_type in ("Regression", "Time-Series"):
-            risk_tier = "Medium Risk (General Industrial Energy & Process Optimization)"
+        elif self.task_type in ("Classification", "Regression", "Time-Series"):
+            risk_tier = "Medium Risk (General Automated Decision Systems & Process Optimization)"
             risk_badge = "MEDIUM_RISK"
+            human_oversight = "Recommended (Periodic operator audit of model telemetry)"
             obligations = [
                 "Article 52: Inform operator of AI-generated continuous predictions.",
                 "Maintain audit logs of training dataset parameters and metrics.",
             ]
         else:
-            risk_tier = "Minimal Risk (Unsupervised Data Exploratory Analytics)"
+            risk_tier = "Minimal Risk (Unsupervised Exploratory Data Analytics)"
             risk_badge = "MINIMAL_RISK"
+            human_oversight = "Standard (Autonomous exploratory profiling)"
             obligations = ["Voluntary code of conduct and standard documentation."]
 
         return {
             "risk_tier":          risk_tier,
             "risk_badge":         risk_badge,
-            "human_oversight":    "Mandatory (Human operator must approve critical fault actions)",
+            "human_oversight":    human_oversight,
             "transparency_level": "High (XAI Feature Importances & Audit Report Generated)",
             "compliance_mandates":obligations,
         }
+
 
     # ── ISO 27001 & Traceability Score ────────────────────────────────────────
 
