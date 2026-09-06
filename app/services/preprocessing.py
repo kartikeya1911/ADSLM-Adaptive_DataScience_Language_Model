@@ -48,8 +48,23 @@ class PreprocessingEngine:
             target_column : Column to predict (None for Clustering).
             task_type     : One of Regression / Classification / Clustering / Time-Series.
         """
-        self.data        = data.copy()
-        self.target      = target_column
+        df = data.copy()
+        
+        # Deduplicate & sanitize column names to prevent duplicate key assignment errors
+        clean_cols = []
+        seen = {}
+        for c in df.columns:
+            c_str = str(c).strip() or "unnamed_col"
+            if c_str in seen:
+                seen[c_str] += 1
+                clean_cols.append(f"{c_str}_{seen[c_str]}")
+            else:
+                seen[c_str] = 0
+                clean_cols.append(c_str)
+        df.columns = clean_cols
+
+        self.data        = df
+        self.target      = str(target_column).strip() if target_column else None
         self.task_type   = task_type
         self._summary    = {}   # Populated during preprocess()
 
@@ -106,9 +121,15 @@ class PreprocessingEngine:
                 stratify    = stratify,
             )
 
+            # Reset indices for continuous alignment
+            X_train = X_train.reset_index(drop=True)
+            X_test  = X_test.reset_index(drop=True)
+            y_train = y_train.reset_index(drop=True)
+            y_test  = y_test.reset_index(drop=True)
+
             # Identify column groups on training data
-            numerical_cols   = X_train.select_dtypes(include=["int64", "float64", "int32", "float32"]).columns.tolist()
-            categorical_cols = X_train.select_dtypes(include=["object", "category", "bool"]).columns.tolist()
+            numerical_cols   = X_train.select_dtypes(include=["int64", "float64", "int32", "float32", "number"]).columns.tolist()
+            categorical_cols = [c for c in X_train.columns if c not in numerical_cols]
 
             # Impute (fit on train, transform train and test)
             X_train, X_test, impute_summary = self._impute_train_test(X_train, X_test, numerical_cols, categorical_cols)
@@ -209,15 +230,31 @@ class PreprocessingEngine:
         cat_cols = [c for c in cat_cols if c in X_train.columns]
 
         if num_cols:
+            for c in num_cols:
+                if X_train[c].isnull().all():
+                    X_train[c] = 0.0
+                if X_test[c].isnull().all():
+                    X_test[c] = 0.0
             num_imputer = SimpleImputer(strategy="median")
-            X_train[num_cols] = num_imputer.fit_transform(X_train[num_cols])
-            X_test[num_cols]  = num_imputer.transform(X_test[num_cols])
+            imputed_tr = num_imputer.fit_transform(X_train[num_cols])
+            imputed_te = num_imputer.transform(X_test[num_cols])
+            for idx, c in enumerate(num_cols):
+                X_train[c] = imputed_tr[:, idx]
+                X_test[c]  = imputed_te[:, idx]
             summary["numerical"] = "Median imputation fitted on train, applied to train & test"
 
         if cat_cols:
+            for c in cat_cols:
+                if X_train[c].isnull().all():
+                    X_train[c] = "missing"
+                if X_test[c].isnull().all():
+                    X_test[c] = "missing"
             cat_imputer = SimpleImputer(strategy="most_frequent")
-            X_train[cat_cols] = cat_imputer.fit_transform(X_train[cat_cols].astype(str))
-            X_test[cat_cols]  = cat_imputer.transform(X_test[cat_cols].astype(str))
+            imputed_tr = cat_imputer.fit_transform(X_train[cat_cols].astype(str))
+            imputed_te = cat_imputer.transform(X_test[cat_cols].astype(str))
+            for idx, c in enumerate(cat_cols):
+                X_train[c] = imputed_tr[:, idx]
+                X_test[c]  = imputed_te[:, idx]
             summary["categorical"] = "Mode imputation fitted on train, applied to train & test"
 
         return X_train, X_test, summary
@@ -228,12 +265,22 @@ class PreprocessingEngine:
         num_cols = [c for c in num_cols if c in X.columns]
         cat_cols = [c for c in cat_cols if c in X.columns]
         if num_cols:
+            for c in num_cols:
+                if X[c].isnull().all():
+                    X[c] = 0.0
             num_imputer = SimpleImputer(strategy="median")
-            X[num_cols] = num_imputer.fit_transform(X[num_cols])
+            imputed = num_imputer.fit_transform(X[num_cols])
+            for idx, c in enumerate(num_cols):
+                X[c] = imputed[:, idx]
             summary["numerical"] = "Median imputation applied"
         if cat_cols:
+            for c in cat_cols:
+                if X[c].isnull().all():
+                    X[c] = "missing"
             cat_imputer = SimpleImputer(strategy="most_frequent")
-            X[cat_cols] = cat_imputer.fit_transform(X[cat_cols].astype(str))
+            imputed = cat_imputer.fit_transform(X[cat_cols].astype(str))
+            for idx, c in enumerate(cat_cols):
+                X[c] = imputed[:, idx]
             summary["categorical"] = "Mode imputation applied"
         return X, summary
 
