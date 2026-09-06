@@ -1,31 +1,31 @@
 # ============================================================
 # ADSLM - Adaptive Data Science Language Model
-# Requirements File
+# Requirements File (Compatible with Python 3.10 / 3.11 / 3.12)
 # ============================================================
 
 # --- Core Framework ---
-fastapi==0.111.0
-uvicorn[standard]==0.30.1
-python-multipart==0.0.9
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+python-multipart>=0.0.9
 
 # --- Data Science & ML ---
-pandas==2.2.2
-numpy==1.26.4
-scikit-learn==1.5.0
-xgboost==2.0.3
-joblib==1.4.2
+pandas>=2.2.0
+numpy>=1.26.0
+scikit-learn>=1.5.0
+xgboost>=2.0.0
+joblib>=1.4.0
 
-# --- Frontend ---
-streamlit==1.35.0
-matplotlib==3.9.0
-seaborn==0.13.2
-plotly==5.22.0
+# --- Frontend & Visualizations ---
+streamlit>=1.35.0
+matplotlib>=3.8.0
+seaborn>=0.13.0
+plotly>=5.20.0
 
 # --- Reporting ---
-reportlab==4.2.0
-Pillow==10.3.0
+reportlab>=4.1.0
+Pillow>=10.3.0
 
 # --- Utilities ---
-python-dotenv==1.0.1
-pydantic==2.7.4
-requests==2.32.3
+python-dotenv>=1.0.0
+pydantic>=2.7.0
+requests>=2.31.0

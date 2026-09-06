@@ -102,17 +102,28 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 - Interactive API Docs: `http://localhost:8000/docs`
 - Health Check: `http://localhost:8000/health`
 
-#### Terminal 2 — Start Cloudflare Tunnel
+#### Terminal 2 — Start Secure Tunnel (Choose Cloudflare or Ngrok)
+
+**Option A: Cloudflare Tunnel (Quick & Free)**
 ```powershell
-# If cloudflared is in your PATH:
+# Standard command (if in PATH):
 cloudflared tunnel --url http://localhost:8000
 
-# Or with full Windows executable path:
+# Full Windows executable command:
 & "C:\Program Files (x86)\cloudflared\cloudflared.exe" tunnel --url http://localhost:8000
 ```
-> Copy the public HTTPS URL from the output (e.g., `https://xxxxx.trycloudflare.com`).
+> Copy the generated HTTPS URL (e.g., `https://xxxx.trycloudflare.com`).
 
-#### Terminal 3 — Start Streamlit Frontend
+**Option B: Ngrok (Permanent Static Domain — URL Never Changes)**
+```powershell
+# Standard command:
+ngrok http --domain=vegetative-companionably-juli.ngrok-free.dev 8000
+
+# Full Windows executable command:
+& "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\Ngrok.Ngrok_Microsoft.Winget.Source_8wekyb3d8bbwe\ngrok.exe" http --domain=vegetative-companionably-juli.ngrok-free.dev 8000
+```
+
+#### Terminal 3 — Start Streamlit Frontend (Local Testing)
 ```powershell
 streamlit run frontend/app.py
 ```
@@ -120,43 +131,52 @@ streamlit run frontend/app.py
 
 ---
 
-## 🛡️ Cloudflare Tunnel Setup
+## 🛡️ Cloudflare Tunnel Setup Details
 
-To connect a public Streamlit Cloud app to your local FastAPI backend:
+To connect a public Streamlit Cloud app to your local FastAPI backend using Cloudflare:
 
 ### 1. Install Cloudflared on Windows
 ```powershell
 winget install Cloudflare.cloudflared
 ```
-*(Or download directly from [Cloudflare GitHub Releases](https://github.com/cloudflare/cloudflared/releases)).*
+*(Or download `cloudflared-windows-amd64.msi` directly from [Cloudflare GitHub Releases](https://github.com/cloudflare/cloudflared/releases)).*
 
-### 2. Launch the Tunnel
+### 2. Complete Launch Command
 ```powershell
 & "C:\Program Files (x86)\cloudflared\cloudflared.exe" tunnel --url http://localhost:8000
 ```
 
 ### 3. Copy the Public HTTPS URL
-`cloudflared` will output a temporary public HTTPS address:
+`cloudflared` outputs a public HTTPS address:
 ```text
-https://random-assigned-name.trycloudflare.com
+https://random-assigned-subdomain.trycloudflare.com
 ```
 
 ---
 
 ## ☁️ Streamlit Cloud Deployment
 
-1. **Push your repository** to GitHub (excluding `.streamlit/secrets.toml`, reports, and cache).
-2. Go to [share.streamlit.io](https://share.streamlit.io) and click **"New app"**.
+1. **Push your repository** to GitHub (excluding `.streamlit/secrets.toml`, reports, and cache):
+   ```bash
+   git add .
+   git commit -m "Deploy ADSLM to Streamlit Cloud"
+   git push origin main
+   ```
+2. Go to **[share.streamlit.io](https://share.streamlit.io)** and click **"New app"**.
 3. Select your repository, branch (`main`), and set the main file path:
    ```text
    frontend/app.py
    ```
-4. Click **"Advanced settings"** -> **"Secrets"**, and paste:
+4. Click **"Advanced settings"** -> **"Secrets"**, and paste your tunnel URL:
    ```toml
-   API_URL = "https://random-assigned-name.trycloudflare.com"
+   # If using Cloudflare Tunnel:
+   API_URL = "https://random-assigned-subdomain.trycloudflare.com"
+
+   # Or if using your permanent Ngrok domain:
+   API_URL = "https://vegetative-companionably-juli.ngrok-free.dev"
    ```
-   *(Replace with your actual Cloudflare Tunnel HTTPS URL).*
 5. Click **"Deploy"**. Your Streamlit Cloud app will communicate securely with your local FastAPI pipeline.
+
 
 ---
 
