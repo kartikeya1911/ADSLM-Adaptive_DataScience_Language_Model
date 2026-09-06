@@ -152,7 +152,8 @@ async def run_full_pipeline(
         try:
             best_model_obj = trainer.model_registry.get(best_model_name)
             if best_model_obj:
-                xai = ExplainabilityEngine(best_model_obj, X_train.columns.tolist())
+                feat_names = X_train.columns.tolist() if hasattr(X_train, "columns") else [f"feature_{i}" for i in range(X_train.shape[1] if hasattr(X_train, "shape") else 1)]
+                xai = ExplainabilityEngine(best_model_obj, feat_names)
                 feature_importances = xai.get_feature_importance()
                 top_features        = xai.get_top_features(n=10)
                 model_summary       = xai.get_model_summary()

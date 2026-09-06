@@ -173,7 +173,7 @@ class TrainingEngine:
 
         if self.task_type == "Clustering":
             # For massive datasets, sample up to 5,000 points for clustering evaluation to prevent memory freeze
-            X_fit = self.X_train.iloc[:5000] if len(self.X_train) > 5000 else self.X_train
+            X_fit = self.X_train[:5000] if len(self.X_train) > 5000 else self.X_train
             model.fit(X_fit)
             labels  = model.labels_
             metrics = EvaluationEngine.evaluate(
@@ -184,8 +184,8 @@ class TrainingEngine:
         else:
             # Subsample for SVM if dataset is large (>3000 rows) to prevent O(N^3) hang
             if model_name == "SVM" and len(self.X_train) > 3000:
-                X_tr_fit = self.X_train.iloc[:3000]
-                y_tr_fit = self.y_train.iloc[:3000]
+                X_tr_fit = self.X_train[:3000]
+                y_tr_fit = self.y_train[:3000] if self.y_train is not None else None
             else:
                 X_tr_fit = self.X_train
                 y_tr_fit = self.y_train
