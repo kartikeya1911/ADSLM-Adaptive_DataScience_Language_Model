@@ -269,7 +269,7 @@ def download_report(filename: str):
     )
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+MAX_FILE_SIZE_BYTES = 500 * 1024 * 1024  # 500 MB limit
 
 async def _read_csv_upload(file: UploadFile) -> str:
     """Reads an uploaded file and returns its content as a UTF-8 string."""
@@ -283,6 +283,13 @@ async def _read_csv_upload(file: UploadFile) -> str:
     if not raw or len(raw.strip()) == 0:
         raise HTTPException(status_code=400, detail="Uploaded CSV file is empty.")
 
+    if len(raw) > MAX_FILE_SIZE_BYTES:
+        size_mb = len(raw) / (1024 * 1024)
+        raise HTTPException(
+            status_code=413,
+            detail=f"Uploaded file ({size_mb:.1f} MB) exceeds the maximum allowed limit of 500 MB."
+        )
+
     try:
         return raw.decode("utf-8")
     except UnicodeDecodeError:
@@ -290,4 +297,5 @@ async def _read_csv_upload(file: UploadFile) -> str:
             return raw.decode("latin-1")
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Could not decode CSV text: {e}")
+
 

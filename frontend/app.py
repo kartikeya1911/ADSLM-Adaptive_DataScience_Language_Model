@@ -189,13 +189,14 @@ with st.sidebar:
     st.markdown("## ⚙️ Configuration")
     st.markdown("---")
 
-    uploaded_file = st.file_uploader("📂 Upload CSV Dataset", type=["csv"])
+    uploaded_file = st.file_uploader("📂 Upload CSV Dataset (Up to 500 MB)", type=["csv"])
 
     target_column   = None
     expertise_level = "intermediate"
 
     if uploaded_file:
-        df_preview = pd.read_csv(uploaded_file)
+        # Read header and first 100 rows for instantaneous UI preview on large datasets (up to 500 MB)
+        df_preview = pd.read_csv(uploaded_file, nrows=100)
         uploaded_file.seek(0)
 
         st.markdown("### 🎯 Target Column")
@@ -215,7 +216,7 @@ with st.sidebar:
         run_btn = st.button("🚀 Run ADSLM Pipeline", use_container_width=True)
     else:
         run_btn = False
-        st.info("👈 Upload a CSV dataset to begin.")
+        st.info("👈 Upload a CSV dataset (up to 500 MB) to begin.")
         st.markdown("---")
         st.markdown("### 💡 Supported Tasks")
         for t, emoji in [("Regression","📈"),("Classification","🏷️"),("Clustering","🔵"),("Time-Series","📅")]:
@@ -229,7 +230,7 @@ if not uploaded_file:
         ("14", "Total Modules"),
         ("4",  "ML Task Types"),
         ("3",  "Expertise Levels"),
-        ("∞",  "Dataset Support"),
+        ("500 MB", "Dataset Limit"),
     ]
     for col, (val, label) in zip([c1,c2,c3,c4], cards):
         with col:
@@ -242,7 +243,7 @@ if not uploaded_file:
     st.markdown("---")
     st.markdown("""
     ### How ADSLM Works
-    1. **Upload** any CSV dataset (sensor data, maintenance logs, quality records)
+    1. **Upload** any CSV dataset up to 500 MB (sensor data, maintenance logs, quality records)
     2. **Analyze** — ADSLM automatically profiles your data
     3. **Detect** — Identifies the right ML task (Regression / Classification / Clustering / Time-Series)
     4. **Train** — Trains & compares multiple models automatically
@@ -252,17 +253,18 @@ if not uploaded_file:
 
 elif uploaded_file and not run_btn:
     # Preview state
-    st.markdown('<div class="section-header">📋 Dataset Preview</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">📋 Dataset Preview (First 100 Rows)</div>', unsafe_allow_html=True)
     st.dataframe(df_preview.head(10), use_container_width=True)
 
     c1, c2, c3 = st.columns(3)
     with c1:
-        st.markdown(f'<div class="metric-card"><div class="metric-value">{df_preview.shape[0]:,}</div><div class="metric-label">Total Rows</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="metric-card"><div class="metric-value">{len(df_preview.columns)}</div><div class="metric-label">Columns Detected</div></div>', unsafe_allow_html=True)
     with c2:
-        st.markdown(f'<div class="metric-card"><div class="metric-value">{df_preview.shape[1]}</div><div class="metric-label">Columns</div></div>', unsafe_allow_html=True)
+        file_size_mb = uploaded_file.size / (1024 * 1024) if hasattr(uploaded_file, "size") and uploaded_file.size else 0.0
+        st.markdown(f'<div class="metric-card"><div class="metric-value">{file_size_mb:.2f} MB</div><div class="metric-label">File Size</div></div>', unsafe_allow_html=True)
     with c3:
         miss_pct = round(df_preview.isnull().sum().sum() / df_preview.size * 100, 1)
-        st.markdown(f'<div class="metric-card"><div class="metric-value">{miss_pct}%</div><div class="metric-label">Missing Values</div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="metric-card"><div class="metric-value">{miss_pct}%</div><div class="metric-label">Missing Values (Sample)</div></div>', unsafe_allow_html=True)
 
 elif run_btn:
     # Pipeline Execution
@@ -299,6 +301,8 @@ elif run_btn:
 
         if res.status_code == 400:
             st.error(f"⚠️ **Bad Request (400):** {err_msg}")
+        elif res.status_code == 413:
+            st.error(f"📦 **Payload Too Large (413):** {err_msg}")
         elif res.status_code == 404:
             st.error(f"🔍 **Resource Not Found (404):** {err_msg}")
         elif res.status_code == 422:
