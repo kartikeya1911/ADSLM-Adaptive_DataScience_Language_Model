@@ -274,7 +274,8 @@ elif run_btn:
             data["target_column"] = target_column
 
         try:
-            res = requests.post(f"{BACKEND_URL}/orchestrate", files=files, data=data, timeout=300)
+            headers = {"ngrok-skip-browser-warning": "true"}
+            res = requests.post(f"{BACKEND_URL}/orchestrate", files=files, data=data, timeout=300, headers=headers)
         except requests.exceptions.ConnectionError:
             st.error(
                 "❌ **Cannot connect to the ADSLM Backend.**\n\n"

@@ -53,7 +53,7 @@ The production demo follows a hybrid cloud-and-edge architecture:
 
 - [Overview & Features](#-overview--features)
 - [Hybrid Deployment Architecture](#-hybrid-deployment-architecture)
-- [Local Development Setup](#-local-development-setup)
+- [Local Quick Start (3 Terminals)](#-local-quick-start-3-terminals)
 - [Cloudflare Tunnel Setup](#-cloudflare-tunnel-setup)
 - [Streamlit Cloud Deployment](#-streamlit-cloud-deployment)
 - [API Reference](#-api-reference)
@@ -61,6 +61,7 @@ The production demo follows a hybrid cloud-and-edge architecture:
 - [Supported ML Models](#-supported-ml-models)
 - [User Expertise Levels](#-user-expertise-levels)
 - [Regulatory & AI Governance](#-regulatory--ai-governance)
+- [Troubleshooting](#-troubleshooting)
 - [Limitations & Architecture Notes](#-limitations--architecture-notes)
 
 ---
@@ -79,39 +80,43 @@ The production demo follows a hybrid cloud-and-edge architecture:
 
 ---
 
-## 🚀 Local Development Setup
+## 🚀 Local Quick Start (3 Terminals)
 
-### 1. Prerequisites
-- Python 3.10+
-- pip
-
-### 2. Install Dependencies
-```bash
-git clone <repository-url>
-cd "Adaptive Data Science Language Model"
+### 1. Prerequisites & Dependencies
+```powershell
 pip install -r requirements.txt
 ```
 
-### 3. Local Secrets Configuration
-Create `.streamlit/secrets.toml` in the project root:
+### 2. Local Secrets Configuration
+Create `.streamlit/secrets.toml` in the project root (pre-configured):
 ```toml
 API_URL = "http://127.0.0.1:8000"
 ```
-*(Note: `.streamlit/secrets.toml` is ignored by Git to ensure security).*
 
-### 4. Start the FastAPI Backend
-```bash
+### 3. Launch the 3 Services
+
+#### Terminal 1 — Start FastAPI Backend
+```powershell
 uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 - Interactive API Docs: `http://localhost:8000/docs`
 - Health Check: `http://localhost:8000/health`
 
-### 5. Start the Streamlit Frontend
-In a second terminal:
-```bash
+#### Terminal 2 — Start Cloudflare Tunnel
+```powershell
+# If cloudflared is in your PATH:
+cloudflared tunnel --url http://localhost:8000
+
+# Or with full Windows executable path:
+& "C:\Program Files (x86)\cloudflared\cloudflared.exe" tunnel --url http://localhost:8000
+```
+> Copy the public HTTPS URL from the output (e.g., `https://xxxxx.trycloudflare.com`).
+
+#### Terminal 3 — Start Streamlit Frontend
+```powershell
 streamlit run frontend/app.py
 ```
-- Streamlit UI: `http://localhost:8501`
+- Local Streamlit UI: `http://localhost:8501`
 
 ---
 
@@ -119,17 +124,19 @@ streamlit run frontend/app.py
 
 To connect a public Streamlit Cloud app to your local FastAPI backend:
 
-### 1. Install Cloudflared
-Download the `cloudflared` binary for your OS (Windows, macOS, or Linux).
+### 1. Install Cloudflared on Windows
+```powershell
+winget install Cloudflare.cloudflared
+```
+*(Or download directly from [Cloudflare GitHub Releases](https://github.com/cloudflare/cloudflared/releases)).*
 
 ### 2. Launch the Tunnel
-With FastAPI running locally on port 8000, start the quick tunnel:
-```bash
-cloudflared tunnel --url http://localhost:8000
+```powershell
+& "C:\Program Files (x86)\cloudflared\cloudflared.exe" tunnel --url http://localhost:8000
 ```
 
 ### 3. Copy the Public HTTPS URL
-`cloudflared` will output a temporary public HTTPS address, for example:
+`cloudflared` will output a temporary public HTTPS address:
 ```text
 https://random-assigned-name.trycloudflare.com
 ```
@@ -236,6 +243,28 @@ FastAPI returns JSON + Streamlit displays metrics & links to /report/{filename}
 - **EU AI Act (2024/2026)**: Categorizes the workload risk tier (e.g. High Risk for safety-critical assets) and lists compliance obligations.
 - **GDPR Privacy Audit**: Scans columns and content for Personally Identifiable Information (PII) like emails, IPs, and phone numbers.
 - **ISO 27001 Traceability**: Generates an audit compliance score (0–100) reflecting data isolation, logging, and XAI explainability.
+
+---
+
+## 🔧 Troubleshooting
+
+### 1. `[Errno 10048] address already in use: 8000`
+If port 8000 is occupied by a previous uvicorn session:
+```powershell
+# Kill all python processes holding port 8000
+Get-Process python | Stop-Process -Force
+```
+
+### 2. `cloudflared : The term is not recognized`
+Run with the absolute path or add to your session PATH:
+```powershell
+& "C:\Program Files (x86)\cloudflared\cloudflared.exe" tunnel --url http://localhost:8000
+```
+
+### 3. Streamlit Backend Connection Error
+Ensure:
+1. `uvicorn` is running in Terminal 1.
+2. If on Streamlit Cloud, verify `API_URL` in **Streamlit Settings -> Secrets** matches your active Cloudflare Tunnel URL.
 
 ---
 
