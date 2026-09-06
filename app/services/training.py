@@ -197,8 +197,10 @@ class TrainingEngine:
             )
             if self.task_type == "Classification":
                 score = metrics.get("F1-score", 0.0)
+            elif self.task_type == "Clustering":
+                score = metrics.get("Silhouette Score", -1.0)
             else:  # Regression / Time-Series
-                score = metrics.get("RMSE", float("inf"))
+                score = metrics.get("RMSE", 999999.0)
 
         return metrics, score
 

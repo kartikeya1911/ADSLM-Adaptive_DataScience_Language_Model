@@ -11,30 +11,45 @@ from pathlib import Path
 from typing import Any, Dict
 
 
-class NumpyEncoder(json.JSONEncoder):
-    """
-    Custom JSON encoder that handles NumPy types.
-    FastAPI / json.dumps cannot serialize np.float32, np.int64, etc. by default.
-    """
-
-    def default(self, obj: Any) -> Any:
-        if isinstance(obj, np.integer):
-            return int(obj)
-        if isinstance(obj, np.floating):
-            return float(obj)
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        if isinstance(obj, pd.Timestamp):
-            return str(obj)
-        return super().default(obj)
+import math
+from pathlib import Path
+from typing import Any, Dict, List
 
 
-def sanitize_for_json(data: Any) -> Any:
+def sanitize_for_json(obj: Any) -> Any:
     """
-    Recursively converts a nested dict/list containing NumPy or Pandas
-    scalars into plain Python types so FastAPI can serialise it.
+    Recursively converts any data structure containing NumPy, Pandas,
+    NaN, Infinity, or custom objects into strictly valid, standard JSON-compliant Python types.
     """
-    return json.loads(json.dumps(data, cls=NumpyEncoder))
+    if obj is None:
+        return None
+    if isinstance(obj, (bool, str)):
+        return obj
+    if isinstance(obj, (int, np.integer)):
+        return int(obj)
+    if isinstance(obj, (float, np.floating)):
+        if math.isnan(obj) or math.isinf(obj):
+            return None
+        return float(obj)
+    if isinstance(obj, dict):
+        return {str(k): sanitize_for_json(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple, set)):
+        return [sanitize_for_json(item) for item in obj]
+    if isinstance(obj, np.ndarray):
+        return sanitize_for_json(obj.tolist())
+    if isinstance(obj, pd.DataFrame):
+        return sanitize_for_json(obj.to_dict(orient="records"))
+    if isinstance(obj, pd.Series):
+        return sanitize_for_json(obj.to_dict())
+    if isinstance(obj, (pd.Timestamp, pd.Timedelta, Path)):
+        return str(obj)
+    try:
+        if math.isnan(float(obj)) or math.isinf(float(obj)):
+            return None
+        return float(obj)
+    except (ValueError, TypeError):
+        pass
+    return str(obj)
 
 
 def ensure_dir(path: str | Path) -> Path:
