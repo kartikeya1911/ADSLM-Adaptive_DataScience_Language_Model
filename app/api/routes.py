@@ -214,13 +214,15 @@ async def run_full_pipeline(
     }
 
     try:
-        gen         = ReportGenerator(full_response)
-        report_path = gen.generate()
-        full_response["report_path"]     = str(report_path)
-        full_response["report_filename"] = Path(report_path).name
-        full_response["report_text"]     = gen.get_report_text()
+        gen = ReportGenerator(full_response)
+        full_response["report_text"] = gen.get_report_text()
+        full_response["report_filename"] = f"adslm_report_{gen.timestamp}.txt"
+        pdf_bytes = gen.get_pdf_bytes()
+        if pdf_bytes:
+            import base64
+            full_response["report_pdf_base64"] = base64.b64encode(pdf_bytes).decode("ascii")
     except Exception as e:
-        logger.warning(f"Report generation failed (non-critical): {e}")
+        logger.warning(f"In-memory report generation failed (non-critical): {e}")
 
     return JSONResponse(content=sanitize_for_json(full_response))
 

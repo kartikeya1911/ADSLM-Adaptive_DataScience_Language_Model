@@ -518,22 +518,19 @@ elif run_btn:
             else:
                 st.success("No significant outliers detected.")
 
-    # ── Report Download ──────────────────────────────────────────────────────
-    report_filename = R.get("report_filename") or (Path(R["report_path"]).name if R.get("report_path") else None)
-    report_text = R.get("report_text")
+    # ── Report Download (Stateless & In-Memory) ──────────────────────────────
+    report_text     = R.get("report_text")
+    report_pdf_b64  = R.get("report_pdf_base64")
+    report_filename = R.get("report_filename") or "adslm_report.txt"
 
-    if report_filename or report_text:
+    if report_text or report_pdf_b64:
         st.markdown("---")
-        st.markdown('<div class="section-header">📄 Generated Reports</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-header">📄 Generated Reports (In-Memory Downloads)</div>', unsafe_allow_html=True)
 
-        base_name = report_filename or "adslm_report"
-        pdf_name  = base_name.replace(".txt", ".pdf").replace(".json", ".pdf")
-        txt_name  = base_name.replace(".pdf", ".txt").replace(".json", ".txt")
-        json_name = base_name.replace(".pdf", ".json").replace(".txt", ".json")
-
-        pdf_url  = f"{BACKEND_URL}/report/{pdf_name}"
-        txt_url  = f"{BACKEND_URL}/report/{txt_name}"
-        json_url = f"{BACKEND_URL}/report/{json_name}"
+        base_name = report_filename.replace(".pdf", "").replace(".txt", "").replace(".json", "")
+        pdf_name  = f"{base_name}.pdf"
+        txt_name  = f"{base_name}.txt"
+        json_name = f"{base_name}.json"
 
         c_rep1, c_rep2, c_rep3 = st.columns(3)
 
@@ -546,14 +543,31 @@ elif run_btn:
                     mime="text/plain",
                     use_container_width=True,
                 )
-            else:
-                st.link_button("⬇️ Download Report (TXT)", txt_url, use_container_width=True)
 
         with c_rep2:
-            st.link_button("📄 View / Download PDF Report", pdf_url, use_container_width=True)
+            if report_pdf_b64:
+                import base64
+                pdf_bytes = base64.b64decode(report_pdf_b64)
+                st.download_button(
+                    "📄 Download Report (PDF)",
+                    data=pdf_bytes,
+                    file_name=pdf_name,
+                    mime="application/pdf",
+                    use_container_width=True,
+                )
+            else:
+                st.button("📄 PDF Generation Unavailable", disabled=True, use_container_width=True)
 
         with c_rep3:
-            st.link_button("📊 Download Pipeline JSON", json_url, use_container_width=True)
+            import json as _json
+            json_bytes = _json.dumps(R, indent=2, default=str).encode("utf-8")
+            st.download_button(
+                "📊 Download Pipeline JSON",
+                data=json_bytes,
+                file_name=json_name,
+                mime="application/json",
+                use_container_width=True,
+            )
 
 
 # ── Footer ─────────────────────────────────────────────────────────────────────

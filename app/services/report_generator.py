@@ -43,35 +43,30 @@ class ReportGenerator:
         self.results   = pipeline_results
         self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    # ── Public API ────────────────────────────────────────────────────────────
-
-    def generate(self) -> str:
+    def generate(self, save_to_disk: bool = False) -> str:
         """
-        Generates both a JSON and a formatted text report.
-
-        Returns:
-            Path to the generated text report.
+        Generates formatted text report.
+        By default, does NOT save to disk to keep the system stateless and clean.
+        Set save_to_disk=True if explicit disk storage is needed.
         """
         report_text = self._build_text_report()
-        report_json = self.results
+        filename = f"adslm_report_{self.timestamp}.txt"
 
-        txt_path  = REPORTS_DIR / f"adslm_report_{self.timestamp}.txt"
-        json_path = REPORTS_DIR / f"adslm_report_{self.timestamp}.json"
+        if save_to_disk:
+            txt_path = REPORTS_DIR / filename
+            txt_path.write_text(report_text, encoding="utf-8")
+            logger.info(f"Report saved to disk → {txt_path}")
 
-        txt_path.write_text(report_text, encoding="utf-8")
-        json_path.write_text(
-            json.dumps(report_json, indent=2, default=str), encoding="utf-8"
-        )
-
-        # Attempt PDF generation (requires reportlab)
-        pdf_path = self._try_generate_pdf(report_text)
-
-        logger.info(f"Report saved → {txt_path}")
-        return str(pdf_path if pdf_path else txt_path)
+        return filename
 
     def get_report_text(self) -> str:
-        """Returns the formatted text report as a string (for Streamlit display)."""
+        """Returns the formatted text report as a string."""
         return self._build_text_report()
+
+    def get_pdf_bytes(self) -> bytes | None:
+        """Generates and returns PDF report as in-memory bytes without writing to disk."""
+        report_text = self._build_text_report()
+        return self._build_pdf_bytes(report_text)
 
     # ── Private Builders ──────────────────────────────────────────────────────
 
@@ -186,21 +181,23 @@ class ReportGenerator:
 
         return "\n".join(lines)
 
-    def _try_generate_pdf(self, report_text: str) -> Path | None:
-        """Attempts to generate a PDF using reportlab if available."""
+    def _build_pdf_bytes(self, report_text: str) -> bytes | None:
+        """Generates PDF directly in an in-memory buffer without creating disk files."""
         try:
+            import io
             from reportlab.lib.pagesizes import A4
             from reportlab.lib.units import cm
             from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
             from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-            from reportlab.lib.enums import TA_LEFT
             from reportlab.lib import colors
 
-            pdf_path = REPORTS_DIR / f"adslm_report_{self.timestamp}.pdf"
-
-            doc    = SimpleDocTemplate(str(pdf_path), pagesize=A4,
-                                       leftMargin=2*cm, rightMargin=2*cm,
-                                       topMargin=2*cm, bottomMargin=2*cm)
+            pdf_buffer = io.BytesIO()
+            doc = SimpleDocTemplate(
+                pdf_buffer,
+                pagesize=A4,
+                leftMargin=2*cm, rightMargin=2*cm,
+                topMargin=2*cm, bottomMargin=2*cm
+            )
             styles = getSampleStyleSheet()
 
             title_style = ParagraphStyle(
@@ -229,12 +226,13 @@ class ReportGenerator:
                 story.append(Paragraph(safe_line or "&nbsp;", body_style))
 
             doc.build(story)
-            logger.info(f"PDF report generated → {pdf_path}")
-            return pdf_path
+            pdf_buffer.seek(0)
+            logger.info("In-memory PDF report generated successfully.")
+            return pdf_buffer.getvalue()
 
         except ImportError:
-            logger.warning("reportlab not installed — PDF generation skipped. Only TXT/JSON reports created.")
+            logger.warning("reportlab not installed — in-memory PDF generation skipped.")
             return None
         except Exception as e:
-            logger.error(f"PDF generation failed: {e}")
+            logger.error(f"In-memory PDF generation failed: {e}")
             return None

@@ -68,17 +68,20 @@ def run_tests():
     print(f"  ✅ Generated report filename: '{report_filename}'")
     print(f"  ✅ Report text length: {len(resp_json['report_text'])} characters")
 
-    # 5. Report Download Test
-    print(f"\n[5/7] Testing GET /report/{report_filename} ...")
-    res = client.get(f"/report/{report_filename}")
-    assert res.status_code == 200, f"Report download failed: {res.status_code}"
-    assert len(res.content) > 0, "Report response content is empty!"
-    print(f"  ✅ GET /report/{report_filename} served {len(res.content)} bytes (media-type: {res.headers.get('content-type')})")
+    # 5. In-Memory Report & Zero Disk Leakage Test
+    print("\n[5/7] Testing In-Memory Reports & Zero System Disk Footprint ...")
+    assert "report_text" in resp_json and len(resp_json["report_text"]) > 100
+    if "report_pdf_base64" in resp_json:
+        import base64
+        pdf_bytes = base64.b64decode(resp_json["report_pdf_base64"])
+        assert len(pdf_bytes) > 0 and pdf_bytes.startswith(b"%PDF")
+        print(f"  ✅ In-memory PDF generated ({len(pdf_bytes)} bytes) without writing to disk")
+    print(f"  ✅ In-memory TXT report generated ({len(resp_json['report_text'])} chars) without writing to disk")
 
-    txt_filename = report_filename.replace(".pdf", ".txt")
-    res_txt = client.get(f"/report/{txt_filename}")
-    if res_txt.status_code == 200:
-        print(f"  ✅ GET /report/{txt_filename} served {len(res_txt.content)} bytes (TXT report)")
+    # Verify no persistent files were left on disk in reports/
+    report_files = [f for f in REPORTS_DIR.iterdir() if f.name != ".gitkeep"]
+    assert len(report_files) == 0, f"Reports were saved to disk unexpectedly: {report_files}"
+    print("  ✅ Verified: reports/ directory has 0 lingering files on disk.")
 
     # 6. Security: Path Traversal Tests
     print("\n[6/7] Testing Security & Path Traversal Prevention ...")
