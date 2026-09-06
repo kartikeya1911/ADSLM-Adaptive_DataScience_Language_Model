@@ -76,6 +76,8 @@ class EvaluationEngine:
 
     @staticmethod
     def _classify(y_true, y_pred) -> Dict[str, Any]:
+        y_true = np.nan_to_num(np.asarray(y_true), nan=0)
+        y_pred = np.nan_to_num(np.asarray(y_pred), nan=0)
         unique_vals = set(np.unique(y_true)).union(set(np.unique(y_pred)))
         avg = "binary" if (len(unique_vals) == 2 and unique_vals == {0, 1}) else "weighted"
         return {
@@ -90,24 +92,33 @@ class EvaluationEngine:
 
     @staticmethod
     def _regress(y_true, y_pred) -> Dict[str, Any]:
+        y_true = np.nan_to_num(np.asarray(y_true, dtype=float), nan=0.0)
+        y_pred = np.nan_to_num(np.asarray(y_pred, dtype=float), nan=0.0)
         mse = mean_squared_error(y_true, y_pred)
         return {
             "RMSE": round(float(np.sqrt(mse)), 4),
             "MAE":  round(float(mean_absolute_error(y_true, y_pred)), 4),
-            "R2":   round(float(r2_score(y_true, y_pred)), 4),
+            "R2":   round(float(r2_score(y_true, y_pred)), 4) if len(y_true) > 1 else 0.0,
         }
 
     # ── Clustering ────────────────────────────────────────────────────────────
 
     @staticmethod
     def _cluster(X, labels) -> Dict[str, Any]:
+        labels = np.asarray(labels)
         unique = np.unique(labels)
         # Silhouette requires at least 2 non-noise clusters
-        valid_labels = labels[labels != -1]  # DBSCAN uses -1 for noise
-        valid_X = X[labels != -1] if hasattr(X, "__len__") else X
+        valid_mask = (labels != -1)  # DBSCAN uses -1 for noise
+        valid_labels = labels[valid_mask]
+        
+        X_arr = np.asarray(X)
+        valid_X = X_arr[valid_mask] if len(X_arr) == len(labels) else X_arr
 
-        if len(np.unique(valid_labels)) > 1:
-            score = silhouette_score(valid_X, valid_labels)
+        if len(np.unique(valid_labels)) > 1 and len(valid_X) > len(np.unique(valid_labels)):
+            try:
+                score = silhouette_score(valid_X, valid_labels)
+            except Exception:
+                score = 0.0
         else:
             score = -1.0  # Cannot compute with a single cluster
 
@@ -124,6 +135,8 @@ class EvaluationEngine:
 
     @staticmethod
     def _timeseries(y_true, y_pred) -> Dict[str, Any]:
+        y_true = np.nan_to_num(np.asarray(y_true, dtype=float), nan=0.0)
+        y_pred = np.nan_to_num(np.asarray(y_pred, dtype=float), nan=0.0)
         mse = mean_squared_error(y_true, y_pred)
         return {
             "RMSE": round(float(np.sqrt(mse)), 4),
