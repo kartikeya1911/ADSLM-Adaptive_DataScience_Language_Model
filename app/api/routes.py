@@ -12,12 +12,14 @@ Endpoints:
 
 import io
 import json
+from pathlib import Path
 from typing import Optional
 
 import pandas as pd
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 
+from app.core.config import REPORTS_DIR
 from app.services.bigdata_engine       import BigDataEngine
 from app.services.dataset_analyzer    import DatasetAnalyzer
 from app.services.expertise_adaptation import ExpertiseAdapter
@@ -34,6 +36,7 @@ from app.utils.logger                 import get_logger
 
 logger = get_logger(__name__)
 router = APIRouter()
+
 
 
 # ── Health Check ──────────────────────────────────────────────────────────────
@@ -213,24 +216,78 @@ async def run_full_pipeline(
     try:
         gen         = ReportGenerator(full_response)
         report_path = gen.generate()
-        full_response["report_path"] = report_path
+        full_response["report_path"]     = str(report_path)
+        full_response["report_filename"] = Path(report_path).name
+        full_response["report_text"]     = gen.get_report_text()
     except Exception as e:
         logger.warning(f"Report generation failed (non-critical): {e}")
 
     return JSONResponse(content=sanitize_for_json(full_response))
 
 
+# ── Report Download Endpoint ──────────────────────────────────────────────────
+
+@router.get("/report/{filename}", tags=["Reports"])
+def download_report(filename: str):
+    """
+    Safely retrieves a generated report (PDF, TXT, or JSON) from the backend.
+    
+    Security:
+    - Path traversal is strictly prevented by resolving filename against REPORTS_DIR.
+    - Non-existent files return HTTP 404.
+    """
+    safe_filename = Path(filename).name
+    if not safe_filename or safe_filename in (".", ".."):
+        raise HTTPException(status_code=400, detail="Invalid report filename.")
+
+    resolved_reports_dir = REPORTS_DIR.resolve()
+    target_path = (resolved_reports_dir / safe_filename).resolve()
+
+    # Ensure path stays strictly inside REPORTS_DIR
+    try:
+        target_path.relative_to(resolved_reports_dir)
+    except ValueError:
+        raise HTTPException(status_code=403, detail="Access forbidden: Path traversal attempt detected.")
+
+    if not target_path.is_file():
+        raise HTTPException(status_code=404, detail=f"Report file '{safe_filename}' not found.")
+
+    # Determine appropriate media type
+    if safe_filename.endswith(".pdf"):
+        media_type = "application/pdf"
+    elif safe_filename.endswith(".txt"):
+        media_type = "text/plain; charset=utf-8"
+    elif safe_filename.endswith(".json"):
+        media_type = "application/json"
+    else:
+        media_type = "application/octet-stream"
+
+    return FileResponse(
+        path=str(target_path),
+        filename=safe_filename,
+        media_type=media_type,
+    )
+
+
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 async def _read_csv_upload(file: UploadFile) -> str:
     """Reads an uploaded file and returns its content as a UTF-8 string."""
-    if not file.filename.endswith(".csv"):
-        raise HTTPException(status_code=400, detail="Only CSV files are supported.")
+    if not file.filename or not file.filename.lower().endswith(".csv"):
+        raise HTTPException(status_code=400, detail="Only CSV files (.csv) are supported.")
     try:
         raw = await file.read()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to read uploaded file: {e}")
+
+    if not raw or len(raw.strip()) == 0:
+        raise HTTPException(status_code=400, detail="Uploaded CSV file is empty.")
+
+    try:
         return raw.decode("utf-8")
     except UnicodeDecodeError:
         try:
             return raw.decode("latin-1")
         except Exception as e:
-            raise HTTPException(status_code=400, detail=f"Could not decode file: {e}")
+            raise HTTPException(status_code=400, detail=f"Could not decode CSV text: {e}")
+

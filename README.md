@@ -1,91 +1,183 @@
 # 🤖 ADSLM — Adaptive Data Science Language Model
-### ABB Innovation Evaluation Project 2026
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.35-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)
 ![Scikit-learn](https://img.shields.io/badge/scikit--learn-1.5-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)
 ![XGBoost](https://img.shields.io/badge/XGBoost-2.0-189F50?style=for-the-badge)
+![Cloudflare](https://img.shields.io/badge/Cloudflare_Tunnel-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
 
-> An **industrial-grade, AI-powered AutoML + Data Science Copilot** that intelligently adapts to any dataset, automatically detects ML task types, trains and evaluates multiple models, generates explainable AI outputs, and delivers expert-level natural language insights — tailored to three user expertise levels.
+> **ADSLM (Adaptive Data Science Language Model)** is an industrial-grade **AutoML + AI Data Science Copilot** system. It autonomously profiles tabular datasets, detects ML tasks (Classification, Regression, Clustering, Time-Series), executes data-leakage-free preprocessing, trains and benchmarks multiple algorithms, generates explainable AI (XAI) feature importances, performs regulatory compliance audits (EU AI Act, GDPR, ISO 27001), and generates tailored natural-language insights adapted to Beginner, Intermediate, and Expert audiences.
+
+*(Note: ADSLM is an adaptive AutoML and structured natural-language insight generation engine designed for industrial data science workflows, rather than a generative text LLM like GPT/Llama).*
+
+---
+
+## 🌐 Hybrid Deployment Architecture
+
+The production demo follows a hybrid cloud-and-edge architecture:
+
+```
+                    INTERNET
+                       │
+                       ▼
+              STREAMLIT CLOUD
+               frontend/app.py
+                       │
+                       │ HTTPS
+                       ▼
+              CLOUDFLARE TUNNEL
+            (https://xxxxx.trycloudflare.com)
+                       │
+                       ▼
+                  LOCAL LAPTOP
+                       │
+                       ▼
+                   FASTAPI
+              main.py (0.0.0.0:8000)
+                       │
+                       ▼
+              ADSLM ML PIPELINE
+        (AutoML, XAI, Audit, Reports)
+```
+
+- **Frontend**: Deployed publicly on **Streamlit Community Cloud** (or executed locally).
+- **Backend**: **FastAPI** server running on the developer laptop (`0.0.0.0:8000`).
+- **Secure Bridge**: **Cloudflare Tunnel** exposes the local FastAPI backend securely over public HTTPS.
+- **Dynamic Configuration**: Streamlit dynamically discovers the backend via `st.secrets["API_URL"]`.
+- **Remote Report Retrieval**: Generated PDF, TXT, and JSON reports are hosted by the FastAPI backend via `GET /report/{filename}` and streamed directly to Streamlit Cloud users.
 
 ---
 
 ## 📋 Table of Contents
 
-- [Overview](#-overview)
-- [Architecture](#-architecture)
-- [Pipeline Workflow](#-pipeline-workflow)
-- [Quick Start](#-quick-start)
+- [Overview & Features](#-overview--features)
+- [Hybrid Deployment Architecture](#-hybrid-deployment-architecture)
+- [Local Development Setup](#-local-development-setup)
+- [Cloudflare Tunnel Setup](#-cloudflare-tunnel-setup)
+- [Streamlit Cloud Deployment](#-streamlit-cloud-deployment)
 - [API Reference](#-api-reference)
-- [Module Descriptions](#-module-descriptions)
-- [Supported Models](#-supported-models)
-- [Expertise Levels](#-expertise-levels)
-- [Dataset](#-dataset)
-- [Industrial Relevance (ABB)](#-industrial-relevance-abb)
-- [Tech Stack](#-tech-stack)
-- [Scalability & Future Scope](#-scalability--future-scope)
-- [Interview Talking Points](#-interview-talking-points)
+- [Pipeline Workflow](#-pipeline-workflow)
+- [Supported ML Models](#-supported-ml-models)
+- [User Expertise Levels](#-user-expertise-levels)
+- [Regulatory & AI Governance](#-regulatory--ai-governance)
+- [Limitations & Architecture Notes](#-limitations--architecture-notes)
 
 ---
 
-## 🌟 Overview
+## 🌟 Overview & Features
 
-ADSLM is a fully autonomous end-to-end machine learning system built for ABB's industrial evaluation. Given any CSV dataset, it:
-
-1. **Profiles** the dataset — shape, dtypes, nulls, outliers, duplicates, potential targets
-2. **Detects** the correct ML task type — Regression, Classification, Clustering, or Time-Series
-3. **Preprocesses** automatically — imputation, encoding, scaling, and stratified splitting
-4. **Recommends** the best models ranked by dataset context and feature characteristics
-5. **Trains** all candidate models in parallel and selects the best performer
-6. **Evaluates** with task-appropriate metrics (F1, RMSE, R², Silhouette)
-7. **Explains** predictions via feature importance extraction and model profiling
-8. **Generates** natural language insights adapted to Beginner / Intermediate / Expert levels
-9. **Reports** full audit trails as PDF, TXT, and JSON
+1. **Automated Dataset Health Profiling**: Identifies missing cells, data types, duplicate records, outliers, and candidate prediction targets.
+2. **Intelligent Task Detection**: Automatically maps data to `Classification`, `Regression`, `Clustering`, or `Time-Series`.
+3. **Data Leakage Prevention**: Separates train and test folds *prior* to fitting imputation and scaling transformers.
+4. **Context-Aware Model Recommendation & Benchmarking**: Ranks and trains multiple model families (Random Forest, XGBoost, SVM, Linear/Logistic, KMeans).
+5. **Explainable AI (XAI)**: Computes feature importance rankings and model decision profiles.
+6. **Adaptive Natural-Language Insights**: Generates plain English explanations adapted to 3 expertise tiers.
+7. **Big Data & Telemetry Profiler**: Estimates PySpark RAM, worker executor distribution, and Delta Lake/Parquet partitioning.
+8. **Automated AI Governance**: EU AI Act risk tiering, GDPR PII scanning, and ISO 27001 audit logging.
+9. **Multi-Format Report Generation**: Creates timestamped PDF, TXT, and JSON audit reports accessible via API.
 
 ---
 
-## 🏗️ Architecture
+## 🚀 Local Development Setup
 
+### 1. Prerequisites
+- Python 3.10+
+- pip
+
+### 2. Install Dependencies
+```bash
+git clone <repository-url>
+cd "Adaptive Data Science Language Model"
+pip install -r requirements.txt
 ```
-ABB/
-├── main.py                              ← FastAPI application entry point
-├── requirements.txt                     ← All pinned dependencies
-├── test_pipeline.py                     ← End-to-end smoke test
-├── README.md                            ← This file
-├── ABB_EVALUATION_SUBMISSION.md         ← Submission guide
-│
-├── app/
-│   ├── __init__.py
-│   ├── api/
-│   │   ├── __init__.py
-│   │   └── routes.py                    ← FastAPI endpoints (analyze, orchestrate, health)
-│   ├── core/
-│   │   ├── __init__.py
-│   │   └── config.py                    ← Central configuration & constants
-│   ├── services/                        ← 10 ADSLM engine modules
-│   │   ├── dataset_analyzer.py          ← Module 1: Dataset profiling
-│   │   ├── task_detection.py            ← Module 2: Task type detection
-│   │   ├── preprocessing.py             ← Module 3: Auto preprocessing
-│   │   ├── model_recommendation.py      ← Module 4: Context-aware model ranking
-│   │   ├── training.py                  ← Module 5: Multi-model training & selection
-│   │   ├── evaluation.py               ← Module 6: Task-specific metrics
-│   │   ├── explainability.py           ← Module 7: XAI & feature importance
-│   │   ├── insight_generator.py        ← Module 8: AI-style NL insights
-│   │   ├── expertise_adaptation.py     ← Module 9: Beginner/Intermediate/Expert output
-│   │   └── report_generator.py         ← Module 10: PDF + TXT + JSON reports
-│   └── utils/
-│       ├── logger.py                    ← Centralized UTF-8 logging
-│       └── helpers.py                   ← NumpyEncoder & JSON utilities
-│
-├── frontend/
-│   └── app.py                          ← Premium Streamlit UI (Plotly visualizations)
-│
-├── datasets/
-│   └── abb_predictive_maintenance.csv  ← 50-record industrial sample dataset
-│
-├── saved_models/                       ← Auto-saved best models (.pkl via joblib)
-└── reports/                            ← Auto-generated reports (PDF / TXT / JSON)
+
+### 3. Local Secrets Configuration
+Create `.streamlit/secrets.toml` in the project root:
+```toml
+API_URL = "http://127.0.0.1:8000"
+```
+*(Note: `.streamlit/secrets.toml` is ignored by Git to ensure security).*
+
+### 4. Start the FastAPI Backend
+```bash
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
+- Interactive API Docs: `http://localhost:8000/docs`
+- Health Check: `http://localhost:8000/health`
+
+### 5. Start the Streamlit Frontend
+In a second terminal:
+```bash
+streamlit run frontend/app.py
+```
+- Streamlit UI: `http://localhost:8501`
+
+---
+
+## 🛡️ Cloudflare Tunnel Setup
+
+To connect a public Streamlit Cloud app to your local FastAPI backend:
+
+### 1. Install Cloudflared
+Download the `cloudflared` binary for your OS (Windows, macOS, or Linux).
+
+### 2. Launch the Tunnel
+With FastAPI running locally on port 8000, start the quick tunnel:
+```bash
+cloudflared tunnel --url http://localhost:8000
+```
+
+### 3. Copy the Public HTTPS URL
+`cloudflared` will output a temporary public HTTPS address, for example:
+```text
+https://random-assigned-name.trycloudflare.com
+```
+
+---
+
+## ☁️ Streamlit Cloud Deployment
+
+1. **Push your repository** to GitHub (excluding `.streamlit/secrets.toml`, reports, and cache).
+2. Go to [share.streamlit.io](https://share.streamlit.io) and click **"New app"**.
+3. Select your repository, branch (`main`), and set the main file path:
+   ```text
+   frontend/app.py
+   ```
+4. Click **"Advanced settings"** -> **"Secrets"**, and paste:
+   ```toml
+   API_URL = "https://random-assigned-name.trycloudflare.com"
+   ```
+   *(Replace with your actual Cloudflare Tunnel HTTPS URL).*
+5. Click **"Deploy"**. Your Streamlit Cloud app will communicate securely with your local FastAPI pipeline.
+
+---
+
+## 🔌 API Reference
+
+### Core Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/health` | Backend status probe for health monitoring |
+| `GET` | `/` | Welcome endpoint and API directory |
+| `POST` | `/analyze` | Dataset profiling and health check without training |
+| `POST` | `/orchestrate` | Full end-to-end ML pipeline (analysis, training, XAI, governance, report) |
+| `GET` | `/report/{filename}` | Secure download for generated PDF, TXT, or JSON reports |
+| `GET` | `/docs` | Interactive Swagger UI |
+| `GET` | `/redoc` | ReDoc API documentation |
+
+### Example Pipeline Request (`/orchestrate`)
+```bash
+curl -X POST http://localhost:8000/orchestrate \
+  -F "file=@datasets/predictive_maintenance.csv" \
+  -F "target_column=Fault" \
+  -F "expertise_level=intermediate"
+```
+
+### Example Report Download (`/report/{filename}`)
+```bash
+curl -O http://localhost:8000/report/adslm_report_20260906_131206.pdf
 ```
 
 ---
@@ -93,264 +185,77 @@ ABB/
 ## 🔄 Pipeline Workflow
 
 ```
-CSV Upload
-    ↓
-[1] DatasetAnalyzer
-    Shape, dtypes, nulls, outliers, duplicates, potential targets
-    ↓
-[2] TaskDetector
-    Rules: no target → Clustering | datetime+num → TimeSeries
-           cat target → Classification | num target → Regression
-    ↓
-[3] PreprocessingEngine
-    Drop duplicates → median/mode impute → OHE → StandardScaler → 80/20 split
-    ↓
-[4] ModelRecommendationEngine
-    Context-aware ranked list (dataset size, feature mix, task type)
-    ↓
-[5] TrainingEngine
-    Train all models via registry → evaluate → select & save best (joblib)
-    ↓
-[6] EvaluationEngine
-    F1 / Accuracy (Classification) | RMSE / MAE / R² (Regression) | Silhouette (Clustering)
-    ↓
-[7] ExplainabilityEngine
-    feature_importances_ / |coef_| extraction → top-N ranked features
-    Model profile: type, strengths, limitations
-    ↓
-[8] InsightGenerator
-    AI-style narratives: dataset health, task rationale, preprocessing summary,
-    model choice justification, feature insights, actionable recommendations
-    ↓
-[9] ExpertiseAdapter
-    Beginner   → plain English, analogies, emoji indicators
-    Intermediate → natural language with moderate technical detail
-    Expert     → statistical depth, architecture notes, engineering caveats
-    ↓
-[10] ReportGenerator
-    Full TXT + JSON + PDF report saved to /reports
-    ↓
-Streamlit Dashboard
-    Metrics cards, Plotly charts, insight panels, download button
+User uploads CSV (Streamlit Cloud)
+        ↓
+POST /orchestrate (via Cloudflare Tunnel HTTPS)
+        ↓
+1. DatasetAnalyzer: Profiling (shape, types, missing, outliers)
+        ↓
+2. TaskDetector: Rules-based task mapping (Classification / Regression / Clustering / Time-Series)
+        ↓
+3. PreprocessingEngine: Train/Test split BEFORE transformer fitting (imputation, encoding, scaling)
+        ↓
+4. ModelRecommendationEngine: Context-ranked algorithms
+        ↓
+5. TrainingEngine: Multi-model training and metric evaluation
+        ↓
+6. ExplainabilityEngine: Feature importance & model profiling
+        ↓
+7. BigDataEngine & RegulatoryComplianceEngine: Telemetry, GDPR, EU AI Act audit
+        ↓
+8. InsightGenerator & ExpertiseAdapter: Natural language narratives (Beginner / Intermediate / Expert)
+        ↓
+9. ReportGenerator: PDF / TXT / JSON reports saved to /reports
+        ↓
+FastAPI returns JSON + Streamlit displays metrics & links to /report/{filename}
 ```
 
 ---
 
-## ⚡ Quick Start
+## 📊 Supported ML Models
 
-### Prerequisites
-
-- Python 3.10+
-- pip
-
-### 1. Clone & Install
-
-```bash
-git clone <repository-url>
-cd ABB
-pip install -r requirements.txt
-```
-
-### 2. Start the Backend (FastAPI)
-
-```bash
-# Terminal 1
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-
-### 3. Start the Frontend (Streamlit)
-
-```bash
-# Terminal 2
-streamlit run frontend/app.py
-```
-
-### 4. Open in Browser
-
-| Service | URL |
-|---------|-----|
-| **Streamlit UI** | http://localhost:8501 |
-| **Swagger API Docs** | http://localhost:8000/docs |
-| **ReDoc API Docs** | http://localhost:8000/redoc |
-| **API Root** | http://localhost:8000 |
-
-### 5. Run End-to-End Smoke Test
-
-```bash
-python test_pipeline.py
-```
-
----
-
-## 🔌 API Reference
-
-### Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/` | Welcome message + endpoint map |
-| `GET` | `/health` | Health check |
-| `POST` | `/analyze` | Dataset analysis only (no training) |
-| `POST` | `/orchestrate` | Full end-to-end pipeline |
-| `GET` | `/docs` | Swagger UI |
-| `GET` | `/redoc` | ReDoc UI |
-| `GET` | `/api/v1/...` | Versioned equivalents of all above |
-
-### `/analyze` — Dataset Analysis
-
-```bash
-curl -X POST http://localhost:8000/analyze \
-  -F "file=@datasets/abb_predictive_maintenance.csv"
-```
-
-**Response:** Dataset profile — shape, dtypes, null counts, outlier flags, potential target columns, and detected task type.
-
-### `/orchestrate` — Full Pipeline
-
-```bash
-curl -X POST http://localhost:8000/orchestrate \
-  -F "file=@datasets/abb_predictive_maintenance.csv" \
-  -F "target_column=Fault" \
-  -F "expertise_level=intermediate"
-```
-
-**Parameters:**
-
-| Parameter | Type | Required | Values | Default |
-|-----------|------|----------|--------|---------|
-| `file` | File (CSV) | ✅ | Any CSV | — |
-| `target_column` | string | ❌ | Column name | Auto-detected |
-| `expertise_level` | string | ❌ | `beginner` \| `intermediate` \| `expert` | `intermediate` |
-
-**Response:** Complete pipeline results including analysis, preprocessing info, model rankings, evaluation metrics, feature importances, NL insights, and report file paths.
-
----
-
-## 🧩 Module Descriptions
-
-| # | Module | File | Purpose |
-|---|--------|------|---------|
-| 1 | **Dataset Analyzer** | `dataset_analyzer.py` | Profiles shape, dtypes, nulls, outliers, duplicates, and potential target columns |
-| 2 | **Task Detector** | `task_detection.py` | Rules-based task type detection (Regression / Classification / Clustering / Time-Series) with reason generation |
-| 3 | **Preprocessing Engine** | `preprocessing.py` | Median/mode imputation, One-Hot Encoding, StandardScaler, stratified 80/20 split |
-| 4 | **Model Recommender** | `model_recommendation.py` | Dataset-aware ranked model recommendations with industrial rationale |
-| 5 | **Training Engine** | `training.py` | Trains all candidate models, selects & saves best via joblib |
-| 6 | **Evaluation Engine** | `evaluation.py` | Task-specific metrics: F1/Accuracy, RMSE/MAE/R², Silhouette Score |
-| 7 | **XAI Module** | `explainability.py` | Feature importance extraction, model profiles, strengths/limitations |
-| 8 | **Insight Generator** | `insight_generator.py` | AI-style narratives covering all pipeline stages + actionable recommendations |
-| 9 | **Expertise Adapter** | `expertise_adaptation.py` | Rewrites insights for Beginner / Intermediate / Expert audiences |
-| 10 | **Report Generator** | `report_generator.py` | Full PDF (via ReportLab) + TXT + JSON audit reports |
-| — | **API Layer** | `routes.py` | FastAPI router with full pipeline orchestration and error handling |
-| — | **Frontend** | `frontend/app.py` | Premium Streamlit UI with Plotly charts and download buttons |
-
----
-
-## 📊 Supported Models
-
-| Task | Models |
-|------|--------|
+| Task Type | Implemented Algorithms |
+|-----------|------------------------|
+| **Classification** | Logistic Regression, Random Forest Classifier, XGBoost Classifier, Support Vector Classifier (SVC) |
 | **Regression** | Linear Regression, Random Forest Regressor, XGBoost Regressor |
-| **Classification** | Logistic Regression, Random Forest Classifier, XGBoost Classifier, SVM |
 | **Clustering** | KMeans, DBSCAN |
-| **Time-Series** | ARIMA, Prophet *(extensible)* |
-| **Time-Series** | ARIMA, Prophet |
-
-> Adding a new model requires only one line in the `model_registry` — zero changes to the rest of the pipeline.
+| **Time-Series** | Tabular temporal models (ARIMA & Prophet feature regression) |
 
 ---
 
-## 🎓 Expertise Levels
+## 🎓 User Expertise Levels
 
-| Level | Audience | Output Style |
-|-------|----------|-------------|
-| **Beginner** | Non-technical stakeholders | Plain English, no jargon, real-world analogies, emoji indicators |
-| **Intermediate** | Data-aware professionals | Natural language with moderate technical detail (default) |
-| **Expert** | Data scientists / ML engineers | Full statistical depth, architecture notes, engineering caveats |
+- **Beginner**: Strips ML jargon, uses intuitive everyday analogies, and highlights emoji indicators for floor operators.
+- **Intermediate**: Natural language insights with balanced technical clarity (default).
+- **Expert**: Rigorous statistical summaries, algorithmic details, and engineering caveats for data scientists.
 
 ---
 
-## 📁 Dataset
+## 🏭 Regulatory & AI Governance
 
-**File:** `datasets/predictive_maintenance.csv`
-
-An industrial sample dataset simulating equipment sensor telemetry with the following characteristics:
-
-- Sensor readings (temperature, vibration, pressure, etc.)
-- Operational labels (`Fault` column: `No Fault`, `Bearing Wear`, `Critical`)
-- Mixed feature types — numeric sensors + categorical status flags
-- Intentional noise: missing values, outliers, and class imbalance for realistic preprocessing testing
+- **EU AI Act (2024/2026)**: Categorizes the workload risk tier (e.g. High Risk for safety-critical assets) and lists compliance obligations.
+- **GDPR Privacy Audit**: Scans columns and content for Personally Identifiable Information (PII) like emails, IPs, and phone numbers.
+- **ISO 27001 Traceability**: Generates an audit compliance score (0–100) reflecting data isolation, logging, and XAI explainability.
 
 ---
 
-## 🏭 Industrial Relevance & Regulatory Compliance
+## ⚠️ Limitations & Architecture Notes
 
-| Domain / Governance | How ADSLM Helps |
-|---------------------|----------------|
-| **Predictive Maintenance** | Classify faults (`Bearing Wear`, `Critical`, `No Fault`) from high-frequency sensor telemetry |
-| **Energy Management** | Regression on power consumption, load forecasting, efficiency prediction |
-| **Anomaly Detection** | Clustering unlabeled operational sensor streams (normal / degraded / critical) |
-| **EU AI Act (2024/2026)** | Automated Risk Classification (Category 3 High-Risk for Asset Safety) + Mandatory Human Oversight rules |
-| **GDPR Privacy Audit** | Automated regex scanning for PII (emails, IPs, phone numbers) with auto-anonymization flags |
-| **ISO 27001 Traceability** | 0–100 Compliance Score audit logging, data leakage protection, and reproducible model cards |
-| **Big Data Streaming** | Ingestion throughput telemetry (MB/s), Delta Lake / Apache Parquet partitioning strategies |
+1. **Local Backend Execution**: For this demo architecture, the FastAPI backend and model training engine run on your local laptop. Your laptop and Cloudflare Tunnel must remain active while accessing the Streamlit Cloud frontend.
+2. **Session Persistence**: Cloudflare quick tunnels generate a dynamic URL on restart; update Streamlit Cloud Secrets with the new tunnel URL if the tunnel is restarted.
+3. **Report Storage**: Reports are saved to the backend `reports/` folder and streamed securely through the `/report/{filename}` endpoint.
 
 ---
 
-## 🛠️ Tech Stack
+## 📜 Verification & Testing
 
-| Layer | Technology |
-|-------|-----------|
-| **API Framework** | FastAPI |
-| **Frontend** | Streamlit |
-| **Governance Engine** | RegulatoryComplianceEngine |
-| **ML & Boosting** | Scikit-learn, XGBoost |
-| **Data & Numerics** | Pandas, NumPy |
-| **Visualization** | Plotly |
-| **Reporting** | ReportLab |
-
----
-
-## 🚀 Scalability & Future Scope
-
-| Feature | Description |
-|---------|-------------|
-| **Delta Lake Ingestion** | Connector for streaming telemetry from Azure Event Hubs / Kafka |
-| **PySpark MLlib** | Distributed training for multi-terabyte datasets |
-| **SHAP Integration** | Model-agnostic feature explanations |
-| **MLflow Registry** | Production model versioning and rollback |
-| **Kubernetes Scaling** | Azure AKS deployment with Horizontal Pod Autoscaler |
-
----
-
-## 💼 Interview Talking Points
-
-**Q: How does ADSLM address Big Data requirements?**
-> The `BigDataEngine` profiles dataset volume and ingestion throughput (MB/s), calculates PySpark JVM memory requirements, and generates optimal Delta Lake / Apache Parquet partitioning strategies for high-frequency industrial telemetry.
-
-**Q: How does ADSLM ensure Regulatory Compliance?**
-> The `RegulatoryComplianceEngine` performs automated governance audits: (1) **EU AI Act**: classifies model risk tiers and mandates human oversight; (2) **GDPR**: scans for PII and flags anonymization requirements; (3) **ISO 27001**: computes an auditability score (0–100) covering logging, XAI lineage, and data leakage isolation.
-
-**Q: What makes this "adaptive"?**
-> The system adapts at **three levels**: (1) *task type* — handles Regression, Classification, Clustering, and Time-Series; (2) *dataset scale* — adapts preprocessing (hybrid encoding for high-cardinality ID columns) and model parameters (`n_jobs=-1`, sample caps); (3) *audience* — rewrites insights for Beginner, Intermediate, and Expert stakeholders.
-
-**Q: How is this production-grade?**
-> Config-driven constants (`config.py`), centralized UTF-8 logging (`logger.py`), `NumpyEncoder` for safe JSON serialization, stratified splits to prevent data leakage, `joblib` model serialization, modular router architecture, and structured error handling at every pipeline stage.
-
-**Q: How would you scale this?**
-> Replace `joblib` with MLflow for experiment tracking, add Optuna for HPO, containerize with Docker, and deploy on Azure AKS with horizontal pod autoscaling. The router-based API design means each endpoint can be independently scaled.
-
-**Q: Why FastAPI + Streamlit?**
-> FastAPI is async, fully typed, and auto-documents via Swagger — production-ready from day one. Streamlit eliminates React boilerplate for rapid demo delivery while still supporting Plotly for rich, interactive visualizations. A perfect fit for an innovation evaluation context.
-
-**Q: What design principles does this follow?**
-> **Single Responsibility**: each of the 10 service modules owns exactly one pipeline stage. **Open/Closed**: adding a new model needs one line in the model registry — no changes to training, evaluation, or reporting logic. **Dependency Inversion**: all stages communicate through structured dicts, making them independently testable.
-
----
-
-## 📜 License
-
-This project was developed exclusively for the **ABB Innovation Evaluation 2026**. All rights reserved.
-
----
-
-*ADSLM v1.0 | Adaptive Data Science Language Model | ABB Evaluation 2026*
+Run the automated test suite locally:
+```bash
+python test_deployment.py
+```
+This tests:
+- `/health` status probe
+- `/orchestrate` full pipeline execution
+- `/report/{filename}` file streaming and path traversal prevention
+- Empty and invalid file upload rejection
+- Local `.streamlit/secrets.toml` configuration

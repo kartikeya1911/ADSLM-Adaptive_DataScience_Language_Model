@@ -8,6 +8,8 @@ Run: streamlit run frontend/app.py
 import io
 import sys
 import os
+from pathlib import Path
+
 os.environ["LOKY_MAX_CPU_COUNT"] = str(os.cpu_count() or 4)
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -16,6 +18,7 @@ import requests
 import streamlit as st
 import plotly.graph_objects as go
 import plotly.express as px
+
 
 # ── Page Config ────────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -160,7 +163,7 @@ hr { border-color: #21262d !important; }
 </style>
 """, unsafe_allow_html=True)
 
-BACKEND_URL = "http://127.0.0.1:8000"
+BACKEND_URL = st.secrets["API_URL"].rstrip("/")
 
 TASK_COLORS = {
     "Regression":     ("#ff6b6b", "#2d1515"),
@@ -273,22 +276,38 @@ elif run_btn:
         try:
             res = requests.post(f"{BACKEND_URL}/orchestrate", files=files, data=data, timeout=300)
         except requests.exceptions.ConnectionError:
-            st.error("❌ Cannot connect to FastAPI backend. Ensure backend is running (`uvicorn main:app`).")
+            st.error(
+                "❌ **Cannot connect to the ADSLM Backend.**\n\n"
+                f"Attempted to reach: `{BACKEND_URL}`\n\n"
+                "• **Local execution**: Ensure FastAPI is running (`uvicorn main:app --host 0.0.0.0 --port 8000`).\n"
+                "• **Streamlit Cloud**: Ensure your Cloudflare Tunnel is active and `API_URL` secret is set correctly in Streamlit Settings."
+            )
             st.stop()
         except requests.exceptions.Timeout:
-            st.error("⏰ Pipeline execution timed out (300s). The dataset may be too large to process in a single request.")
+            st.error("⏰ **Pipeline execution timed out (300s).** The dataset may be too large or the server is processing multiple heavy models.")
             st.stop()
         except Exception as e:
-            st.error(f"❌ Network or pipeline request failed: {e}")
+            st.error(f"❌ **Network or pipeline request failed:** {e}")
             st.stop()
 
     if res.status_code != 200:
         try:
-            err_msg = res.json().get('detail', 'Unknown error')
+            err_msg = res.json().get("detail", res.text)
         except Exception:
-            err_msg = res.text or 'Unknown error'
-        st.error(f"Pipeline failed (HTTP {res.status_code}): {err_msg}")
+            err_msg = res.text or "Unknown server error"
+
+        if res.status_code == 400:
+            st.error(f"⚠️ **Bad Request (400):** {err_msg}")
+        elif res.status_code == 404:
+            st.error(f"🔍 **Resource Not Found (404):** {err_msg}")
+        elif res.status_code == 422:
+            st.error(f"📋 **Data Validation Error (422):** {err_msg}")
+        elif res.status_code == 500:
+            st.error(f"💥 **Internal Pipeline Error (500):** {err_msg}")
+        else:
+            st.error(f"❌ **Pipeline failed (HTTP {res.status_code}):** {err_msg}")
         st.stop()
+
 
     R = res.json()
     meta     = R.get("metadata", {})
@@ -495,25 +514,42 @@ elif run_btn:
                 st.success("No significant outliers detected.")
 
     # ── Report Download ──────────────────────────────────────────────────────
-    if R.get("report_path"):
+    report_filename = R.get("report_filename") or (Path(R["report_path"]).name if R.get("report_path") else None)
+    report_text = R.get("report_text")
+
+    if report_filename or report_text:
         st.markdown("---")
-        st.markdown('<div class="section-header">📄 Report</div>', unsafe_allow_html=True)
-        path = R["report_path"]
-        txt_path = path.replace(".pdf", ".txt") if path.endswith(".pdf") else path
-        try:
-            txt_path_check = txt_path if os.path.exists(txt_path) else path
-            if os.path.exists(txt_path_check):
-                with open(txt_path_check, "r", encoding="utf-8") as f:
-                    report_text = f.read()
+        st.markdown('<div class="section-header">📄 Generated Reports</div>', unsafe_allow_html=True)
+
+        base_name = report_filename or "adslm_report"
+        pdf_name  = base_name.replace(".txt", ".pdf").replace(".json", ".pdf")
+        txt_name  = base_name.replace(".pdf", ".txt").replace(".json", ".txt")
+        json_name = base_name.replace(".pdf", ".json").replace(".txt", ".json")
+
+        pdf_url  = f"{BACKEND_URL}/report/{pdf_name}"
+        txt_url  = f"{BACKEND_URL}/report/{txt_name}"
+        json_url = f"{BACKEND_URL}/report/{json_name}"
+
+        c_rep1, c_rep2, c_rep3 = st.columns(3)
+
+        with c_rep1:
+            if report_text:
                 st.download_button(
-                    "⬇️ Download Full Report (TXT)",
+                    "⬇️ Download Report (TXT)",
                     data=report_text.encode("utf-8"),
-                    file_name="adslm_report.txt",
+                    file_name=txt_name,
                     mime="text/plain",
                     use_container_width=True,
                 )
-        except Exception:
-            pass
+            else:
+                st.link_button("⬇️ Download Report (TXT)", txt_url, use_container_width=True)
+
+        with c_rep2:
+            st.link_button("📄 View / Download PDF Report", pdf_url, use_container_width=True)
+
+        with c_rep3:
+            st.link_button("📊 Download Pipeline JSON", json_url, use_container_width=True)
+
 
 # ── Footer ─────────────────────────────────────────────────────────────────────
 st.markdown("---")
